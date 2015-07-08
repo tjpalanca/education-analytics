@@ -11,6 +11,7 @@ loadfonts()
 library(scales)
 library(stringr)
 library(gridExtra)
+library(stringdist)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
