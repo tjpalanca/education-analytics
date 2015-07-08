@@ -60,3 +60,6 @@ survival.year.dt <- survival.dt %>%  filter(grade != "Grade 1") %>%
                                                                    map.lon = mean(map.lon, na.rm = T)))
 
 rm(survival_append.dt)
+rm(eligibleschools.dt)
+
+ggplot(survival.year.dt, )
