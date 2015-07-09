@@ -33,18 +33,20 @@ survival.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$schoo
             map.lon = mean(map.lon, na.rm = T)) %>% ungroup() %>%
   mutate(cohort = year - as.numeric(grade) - 2001 + 1) %>%
   group_by(school.citymuni, gender, cohort) %>% arrange(year) %>%
-  mutate(dropout = enrollment/lag(enrollment) - 1) %>% ungroup() %>% filter(!is.na(dropout))
+  mutate(dropout = enrollment/lag(enrollment) - 1,
+         valid = as.numeric(grade) - lag(as.numeric(grade)) == 1) %>%
+  ungroup() %>% filter(!is.na(dropout))
 
 survival_append.dt <- data.frame(school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
                                  grade = rep("Grade 1", 6*length(unique(survival.dt$school.citymuni))),
                                  year = rep(2013:2015, each = 2*length(unique(survival.dt$school.citymuni))),
                                  gender = rep(c("Female", "Male"),3*length(unique(survival.dt$school.citymuni))),
-                                 mean.dropout = rep(0, 6),
-                                 min.dropout = rep(0, 6),
-                                 max.dropout = rep(0, 6),
-                                 mean.survival = rep(1, 6),
-                                 min.survival = rep(1, 6),
-                                 max.survival = rep(1, 6))
+                                 mean.dropout = 0,
+                                 min.dropout = 0,
+                                 max.dropout = 0,
+                                 mean.survival = 1,
+                                 min.survival = 1,
+                                 max.survival = 1)
 
 survival.year.dt <- survival.dt %>%  filter(grade != "Grade 1") %>%
   group_by(school.citymuni, grade, gender, year) %>%
@@ -62,4 +64,13 @@ survival.year.dt <- survival.dt %>%  filter(grade != "Grade 1") %>%
 rm(survival_append.dt)
 rm(eligibleschools.dt)
 
-ggplot(survival.year.dt, )
+ggplot(survival.year.dt %>% filter(grade != "Grade 1"), aes(x = grade, y = mean.dropout)) +
+  facet_wrap(~gender) +
+  geom_violin()
+
+# To Do:
+# 1. Separate high school and elementary for the citymuni data
+# 2. Compute the path of least resistance for the elementary and high school
+# 3. Correlate path of least resistance to the transfer from elementary to high school
+# 4. Compute for capacity metrics and cluster the schools
+
