@@ -11,11 +11,23 @@ loadfonts()
 library(scales)
 library(stringr)
 library(gridExtra)
+library(ggmap)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
 load("Data/D2 - Schools Data.RData")
 load("Data/D3 - CityMuni Data.RData")
+
+PH.map <- get_googlemap (
+  center = c(121.8347,12.45113),
+  zoom = 5,
+  scale = 4,
+  maptype = "roadmap",
+  region = "PH",
+  filename = "Philippines Map",
+  style = "feature:all|element:labels|visibility:off",
+  color = "bw"
+)
 
 # CityMuni Level Cohort ---------------------------------------------------
 
@@ -85,18 +97,124 @@ hs.survival.dt <- survival.dt %>%  filter(as.numeric(grade) > 8) %>%
          min.cum.survival = cumprod(min.survival)) %>% ungroup() %>%
   left_join(schools.dt %>% group_by(school.citymuni) %>% summarise(map.lat = mean(map.lat, na.rm = T),
                                                                    map.lon = mean(map.lon, na.rm = T)))
-
 rm(survival_append.dt)
 
+# Cleaning of Latitude and Longitude Data ---------------------------------
 
-ggplot(survival.year.dt %>% filter(grade != "Grade 1"), aes(x = grade, y = m ean.dropout)) +
-  facet_wrap(~gender) +
-  geom_violin()
+# Elementary
+
+for (i in 1:length(elem.survival.dt$school.citymuni[is.na(elem.survival.dt$map.lat)])) {
+  distances.vc <- stringdist(
+    tolower((elem.survival.dt$school.citymuni[is.na(elem.survival.dt$map.lat)])[i]),
+    tolower(citymuni.dt$citymuni))
+  elem.survival.dt$matched.citymuni[is.na(elem.survival.dt$map.lat)][i] <-
+    citymuni.dt$citymuni[distances.vc == min(distances.vc)]
+  elem.survival.dt$matched.map.lat[is.na(elem.survival.dt$map.lat)][i] <-
+    citymuni.dt$map.lat[distances.vc == min(distances.vc)]
+  elem.survival.dt$matched.map.lon[is.na(elem.survival.dt$map.lat)][i] <-
+    citymuni.dt$map.lon[distances.vc == min(distances.vc)]
+  print(citymuni.dt$citymuni[distances.vc == min(distances.vc)])
+}
+
+# checked for consistency - OK, so transfer over to columns
+
+elem.survival.dt$map.lon[is.na(elem.survival.dt$map.lat)] <-
+  elem.survival.dt$matched.map.lon[is.na(elem.survival.dt$map.lat)]
+elem.survival.dt$map.lat[is.na(elem.survival.dt$map.lat)] <-
+  elem.survival.dt$matched.map.lat[is.na(elem.survival.dt$map.lat)]
+
+elem.survival.dt$matched.citymuni <- elem.survival.dt$matched.map.lat <-
+  elem.survival.dt$matched.map.lon <- NULL
+
+# Secondary
+
+for (i in 1:length(hs.survival.dt$school.citymuni[is.na(hs.survival.dt$map.lat)])) {
+  distances.vc <- stringdist(
+    tolower((hs.survival.dt$school.citymuni[is.na(hs.survival.dt$map.lat)])[i]),
+    tolower(citymuni.dt$citymuni))
+  hs.survival.dt$matched.citymuni[is.na(hs.survival.dt$map.lat)][i] <-
+    citymuni.dt$citymuni[distances.vc == min(distances.vc)]
+  hs.survival.dt$matched.map.lat[is.na(hs.survival.dt$map.lat)][i] <-
+    citymuni.dt$map.lat[distances.vc == min(distances.vc)]
+  hs.survival.dt$matched.map.lon[is.na(hs.survival.dt$map.lat)][i] <-
+    citymuni.dt$map.lon[distances.vc == min(distances.vc)]
+  print(citymuni.dt$citymuni[distances.vc == min(distances.vc)])
+}
+
+# checked for consistency - OK, so transfer over to columns
+
+hs.survival.dt$map.lon[is.na(hs.survival.dt$map.lat)] <-
+  hs.survival.dt$matched.map.lon[is.na(hs.survival.dt$map.lat)]
+hs.survival.dt$map.lat[is.na(hs.survival.dt$map.lat)] <-
+  hs.survival.dt$matched.map.lat[is.na(hs.survival.dt$map.lat)]
+
+hs.survival.dt$matched.citymuni <- hs.survival.dt$matched.map.lat <-
+  hs.survival.dt$matched.map.lon <- NULL
+
+if (sum(is.na(elem.survival.dt$map.lat)) + sum(is.na(hs.survival.dt$map.lon)) == 0) {
+  print("OK for map coordinates.")
+} else {
+  stop("ERROR: Map coordinates incomplete.")
+}
+
+# Plot Production ---------------------------------------------------------
+
+elementary.dt <- elem.survival.dt %>% filter(grade == "Grade 6") %>%
+  mutate(mean.cum.survival = ifelse(mean.cum.survival >= 1, 1, mean.cum.survival),
+         level = "Elementary", cum.dropout = 1-mean.cum.survival) %>% group_by(year, gender) %>%
+  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>% ungroup()
+
+secondary.dt <- hs.survival.dt %>% filter(grade == "Year 4 / Grade 10") %>%
+  mutate(mean.cum.survival = ifelse(mean.cum.survival >= 1, 1, mean.cum.survival),
+         level = "Secondary", cum.dropout = 1-mean.cum.survival) %>% group_by(year, gender) %>%
+  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>% ungroup()
+
+elementary_survival.gg <- ggmap(PH.map, base_layer = ggplot(data = elementary.dt,
+                                  mapping = aes(x = map.lon, y = map.lat))) +
+  facet_grid(gender ~ year) +
+  geom_point(aes(color = mean.cum.survival), size = 1, alpha = 0.75) +
+  geom_density2d(data = secondary.dt[secondary.dt$poor.performance,], bins = 2, color = "red") +
+  scale_color_gradient(low = "darkred", high = "darkgreen", limits = c(0,1),
+                       name = "Survival Rate\nup to Grade 6 (%)",
+                       labels = percent) +
+  coord_map(xlim = c(116.812721, 126.856628), ylim = c(4.46811, 21.23415)) +
+  ggtitle("Elementary") +
+  theme(legend.position = "bottom",
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        text = element_text(family = "Open Sans"),
+        plot.title = element_text(hjust = 0, family = "Raleway", face = "bold"),
+        plot.background = element_rect(color = NA, fill = "grey98"),
+        legend.background = element_blank(),
+        strip.text = element_text(size = 14))
+
+secondary_survival.gg <- ggmap(PH.map, base_layer = ggplot(data = secondary.dt,
+                                  mapping = aes(x = map.lon, y = map.lat))) +
+  facet_grid(gender ~ year) +
+  geom_point(aes(color = mean.cum.survival), size = 1, alpha = 0.75) +
+  geom_density2d(data = secondary.dt[secondary.dt$poor.performance,], bins = 2, color = "red") +
+  scale_color_gradient(low = "darkred", high = "darkgreen", limits = c(0,1),
+                       name = "Survival Rate\nup to Year 4 /\nGrade 10 (%)",
+                       labels = percent) +
+  coord_map(xlim = c(116.812721, 126.856628), ylim = c(4.46811, 21.23415)) +
+  ggtitle("Secondary") +
+  theme(legend.position = "bottom",
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        text = element_text(family = "Open Sans"),
+        plot.title = element_text(hjust = 0, family = "Raleway", face = "bold"),
+        plot.background = element_rect(color = NA, fill = "grey98"),
+        legend.background = element_blank(),
+        strip.text = element_text(size = 14))
+
+svg("Output/O3 - Survival Map.svg", bg = "gray98", width = 14, height = 9)
+grid.arrange(elementary_survival.gg, secondary_survival.gg, ncol = 2)
+dev.off()
 
 # To Do:
-# 1. Separate high school and elementary for the citymuni data
 # 2. Compute the path of least resistance for the elementary and high school
 # 3. Correlate path of least resistance to the transfer from elementary to high school
 # 4. Compute for capacity metrics and cluster the schools
 # 5. Check for the upper limit on capacity metrics using correlates
-
