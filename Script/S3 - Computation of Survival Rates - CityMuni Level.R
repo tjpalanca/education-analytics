@@ -11,7 +11,6 @@ loadfonts()
 library(scales)
 library(stringr)
 library(gridExtra)
-library(stringdist)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
@@ -48,7 +47,33 @@ survival_append.dt <- data.frame(school.citymuni = rep(unique(survival.dt$school
                                  min.survival = 1,
                                  max.survival = 1)
 
-survival.year.dt <- survival.dt %>%  filter(grade != "Grade 1") %>%
+elem.survival.dt <- survival.dt %>%  filter(grade != "Grade 1" & as.numeric(grade) <= 7) %>%
+  group_by(school.citymuni, grade, gender, year) %>%
+  summarise(mean.dropout = mean(dropout), mean.survival = 1 + mean.dropout,
+            min.dropout = min(dropout), max.dropout = max(dropout),
+            min.survival = 1 + max.dropout, max.survival = 1 + min.dropout) %>%
+  rbind(survival_append.dt) %>%
+  group_by(school.citymuni, gender, year) %>% arrange(grade) %>%
+  mutate(mean.cum.survival = cumprod(mean.survival),
+         max.cum.survival = cumprod(max.survival),
+         min.cum.survival = cumprod(min.survival)) %>% ungroup() %>%
+  left_join(schools.dt %>% group_by(school.citymuni) %>% summarise(map.lat = mean(map.lat, na.rm = T),
+                                                                   map.lon = mean(map.lon, na.rm = T)))
+rm(survival_append.dt)
+rm(eligibleschools.dt)
+
+survival_append.dt <- data.frame(school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
+                                 grade = rep("Year 1 / Grade 7", 6*length(unique(survival.dt$school.citymuni))),
+                                 year = rep(2013:2015, each = 2*length(unique(survival.dt$school.citymuni))),
+                                 gender = rep(c("Female", "Male"),3*length(unique(survival.dt$school.citymuni))),
+                                 mean.dropout = 0,
+                                 min.dropout = 0,
+                                 max.dropout = 0,
+                                 mean.survival = 1,
+                                 min.survival = 1,
+                                 max.survival = 1)
+
+hs.survival.dt <- survival.dt %>%  filter(as.numeric(grade) > 8) %>%
   group_by(school.citymuni, grade, gender, year) %>%
   summarise(mean.dropout = mean(dropout), mean.survival = 1 + mean.dropout,
             min.dropout = min(dropout), max.dropout = max(dropout),
@@ -62,9 +87,9 @@ survival.year.dt <- survival.dt %>%  filter(grade != "Grade 1") %>%
                                                                    map.lon = mean(map.lon, na.rm = T)))
 
 rm(survival_append.dt)
-rm(eligibleschools.dt)
 
-ggplot(survival.year.dt %>% filter(grade != "Grade 1"), aes(x = grade, y = mean.dropout)) +
+
+ggplot(survival.year.dt %>% filter(grade != "Grade 1"), aes(x = grade, y = m ean.dropout)) +
   facet_wrap(~gender) +
   geom_violin()
 
@@ -73,4 +98,5 @@ ggplot(survival.year.dt %>% filter(grade != "Grade 1"), aes(x = grade, y = mean.
 # 2. Compute the path of least resistance for the elementary and high school
 # 3. Correlate path of least resistance to the transfer from elementary to high school
 # 4. Compute for capacity metrics and cluster the schools
+# 5. Check for the upper limit on capacity metrics using correlates
 
