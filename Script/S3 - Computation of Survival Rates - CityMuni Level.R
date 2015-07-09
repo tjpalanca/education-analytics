@@ -12,6 +12,7 @@ library(scales)
 library(stringr)
 library(gridExtra)
 library(ggmap)
+library(stringdist)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
@@ -30,6 +31,8 @@ PH.map <- get_googlemap (
 )
 
 # CityMuni Level Cohort ---------------------------------------------------
+
+schools.dt <- schools.dt %>% mutate(school.citymuni = paste(school.citymuni, school.province))
 
 eligibleschools.dt <- enrolment.dt %>% group_by(school.id) %>% summarise(count = n()) %>%
   mutate(secondary = school.id > 300000) %>%
@@ -106,7 +109,7 @@ rm(survival_append.dt)
 for (i in 1:length(elem.survival.dt$school.citymuni[is.na(elem.survival.dt$map.lat)])) {
   distances.vc <- stringdist(
     tolower((elem.survival.dt$school.citymuni[is.na(elem.survival.dt$map.lat)])[i]),
-    tolower(citymuni.dt$citymuni))
+    tolower(paste(citymuni.dt$citymuni, citymuni.dt$province)))
   elem.survival.dt$matched.citymuni[is.na(elem.survival.dt$map.lat)][i] <-
     citymuni.dt$citymuni[distances.vc == min(distances.vc)]
   elem.survival.dt$matched.map.lat[is.na(elem.survival.dt$map.lat)][i] <-
@@ -131,7 +134,7 @@ elem.survival.dt$matched.citymuni <- elem.survival.dt$matched.map.lat <-
 for (i in 1:length(hs.survival.dt$school.citymuni[is.na(hs.survival.dt$map.lat)])) {
   distances.vc <- stringdist(
     tolower((hs.survival.dt$school.citymuni[is.na(hs.survival.dt$map.lat)])[i]),
-    tolower(citymuni.dt$citymuni))
+    tolower(paste(citymuni.dt$citymuni, citymuni.dt$province)))
   hs.survival.dt$matched.citymuni[is.na(hs.survival.dt$map.lat)][i] <-
     citymuni.dt$citymuni[distances.vc == min(distances.vc)]
   hs.survival.dt$matched.map.lat[is.na(hs.survival.dt$map.lat)][i] <-
@@ -152,6 +155,12 @@ hs.survival.dt$matched.citymuni <- hs.survival.dt$matched.map.lat <-
   hs.survival.dt$matched.map.lon <- NULL
 
 if (sum(is.na(elem.survival.dt$map.lat)) + sum(is.na(hs.survival.dt$map.lon)) == 0) {
+  print("OK for map coordinates.")
+} else {
+  stop("ERROR: Map coordinates incomplete.")
+}
+
+if (sum(is.na(hs.survival.dt$map.lat)) + sum(is.na(hs.survival.dt$map.lon)) == 0) {
   print("OK for map coordinates.")
 } else {
   stop("ERROR: Map coordinates incomplete.")
@@ -213,8 +222,3 @@ svg("Output/O3 - Survival Map.svg", bg = "gray98", width = 14, height = 9)
 grid.arrange(elementary_survival.gg, secondary_survival.gg, ncol = 2)
 dev.off()
 
-# To Do:
-# 2. Compute the path of least resistance for the elementary and high school
-# 3. Correlate path of least resistance to the transfer from elementary to high school
-# 4. Compute for capacity metrics and cluster the schools
-# 5. Check for the upper limit on capacity metrics using correlates
