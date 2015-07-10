@@ -124,9 +124,32 @@ paths.dt <- paths.dt %>% arrange(citymuniprov, level) %>%
               select(citymuniprov, nearest.elementary.school.dist,
                      nearest.secondary.school.dist))
 
-ggmap(PH.map, base_layer = ggplot(paths.dt, aes(x = lon, y = lat))) +
+paths.elem.dt <- paths.dt %>% filter(level != "secondary")
+paths.seco.dt <- paths.dt %>% filter(level != "elementary")
+
+ggmap(PH.map, base_layer = ggplot(paths.elem.dt, aes(x = lon, y = lat))) +
   geom_path(aes(group = citymuniprov)) +
-  coord_map(xlim = c(116.812721, 126.856628), ylim = c(4.46811, 21.23415)) +
+  geom_point(data = schools.dt %>% filter(school.classification == "Elementary"),
+             aes(x = map.lon, y = map.lat),
+             size = 0.1, pch = 1, color = "orange") +
+  coord_map(xlim = c(113.812721, 126.856628), ylim = c(4.46811, 21.23415)) +
+  ggtitle("Elementary") +
+  theme(legend.position = "bottom",
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        axis.text = element_blank(),
+        text = element_text(family = "Open Sans"),
+        plot.title = element_text(hjust = 0, family = "Raleway", face = "bold"),
+        plot.background = element_rect(color = NA, fill = "grey98"),
+        legend.background = element_blank(),
+        strip.text = element_text(size = 14))
+
+ggmap(PH.map, base_layer = ggplot(paths.seco.dt, aes(x = lon, y = lat))) +
+  geom_path(aes(group = citymuniprov)) +
+  geom_point(data = schools.dt %>% filter(school.classification == "Secondary"),
+             aes(x = map.lon, y = map.lat),
+             size = 0.1, pch = 1, color = "blue") +
+  coord_map(xlim = c(113.812721, 126.856628), ylim = c(4.46811, 21.23415)) +
   ggtitle("Secondary") +
   theme(legend.position = "bottom",
         axis.title = element_blank(),
@@ -138,14 +161,27 @@ ggmap(PH.map, base_layer = ggplot(paths.dt, aes(x = lon, y = lat))) +
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
-
 # Plot of Distances -------------------------------------------------------
 
+ggplot(paths.dt %>% filter(citymuniprov != "Kalayaan Palawan" &
+                             citymuniprov != "Santa Cruz Occidental Mindoro"),
+       aes(x = nearest.elementary.school.dist/1000, y = nearest.secondary.school.dist/1000)) +
+  geom_point(color = "green3") +
+  geom_text(aes(label = ifelse(nearest.elementary.school.dist/1000 > 3 |
+                                 nearest.secondary.school.dist/1000 > 6,
+                               str_wrap(citymuniprov,12), NA)), size = 3, lineheight = 0.8,
+            family = "Open Sans", hjust = -0.1, vjust = -0.1) +
+  ggtitle("Acccessibility to Schools\n") +
+  scale_x_continuous(breaks = seq(0,10,2), name = "Distance to Nearest\nElementary School (km)") +
+  scale_y_continuous(breaks = seq(0,18,2), name = "Distance to Nearest\nSecondary School (km)") +
+  coord_cartesian(xlim = c(0,10), ylim = c(0,18)) +
+  theme_minimal() +
+  theme(plot.title = element_text("Raleway", "bold", hjust = 0),
+        text = element_text("Open Sans"),
+        axis.title = element_text(face = "bold"))
 
-# Correlate with Dropout Rates --------------------------------------------
-
-
-
+# Aborted analysis.
+# REASON: Small errors in the geocodes (geocodes being placed in the geographic center rather than the population center) cause similarly small errors in the distance to schools the variance of which is too large to produce meaningful comparisons.
 
 # To Do:
 # 4. Compute for capacity metrics and cluster the schools
