@@ -127,7 +127,7 @@ paths.dt <- paths.dt %>% arrange(citymuniprov, level) %>%
 paths.elem.dt <- paths.dt %>% filter(level != "secondary")
 paths.seco.dt <- paths.dt %>% filter(level != "elementary")
 
-ggmap(PH.map, base_layer = ggplot(paths.elem.dt, aes(x = lon, y = lat))) +
+elem.path.gg <- ggmap(PH.map, base_layer = ggplot(paths.elem.dt, aes(x = lon, y = lat))) +
   geom_path(aes(group = citymuniprov)) +
   geom_point(data = schools.dt %>% filter(school.classification == "Elementary"),
              aes(x = map.lon, y = map.lat),
@@ -144,7 +144,7 @@ ggmap(PH.map, base_layer = ggplot(paths.elem.dt, aes(x = lon, y = lat))) +
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
-ggmap(PH.map, base_layer = ggplot(paths.seco.dt, aes(x = lon, y = lat))) +
+seco.path.gg <- ggmap(PH.map, base_layer = ggplot(paths.seco.dt, aes(x = lon, y = lat))) +
   geom_path(aes(group = citymuniprov)) +
   geom_point(data = schools.dt %>% filter(school.classification == "Secondary"),
              aes(x = map.lon, y = map.lat),
@@ -160,6 +160,10 @@ ggmap(PH.map, base_layer = ggplot(paths.seco.dt, aes(x = lon, y = lat))) +
         plot.background = element_rect(color = NA, fill = "grey98"),
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
+
+svg(filename = "Output/O4 - Paths Plot.svg", bg = "grey98", width = 10, height = 8)
+grid.arrange(elem.path.gg, seco.path.gg, ncol = 2)
+dev.off()
 
 # Plot of Distances -------------------------------------------------------
 
@@ -182,7 +186,3 @@ ggplot(paths.dt %>% filter(citymuniprov != "Kalayaan Palawan" &
 
 # Aborted analysis.
 # REASON: Small errors in the geocodes (geocodes being placed in the geographic center rather than the population center) cause similarly small errors in the distance to schools the variance of which is too large to produce meaningful comparisons.
-
-# To Do:
-# 4. Compute for capacity metrics and cluster the schools
-# 5. Check for the upper limit on capacity metrics using correlates
