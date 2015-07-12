@@ -114,4 +114,30 @@ rm(schools.dt)
 citymuni.dt <- read.csv("Data/CityMuni.csv", stringsAsFactors = F)
 save.image("Data/D3 - CityMuni Data.RData")
 
+# Capacity Data -----------------------------------------------------------
+load("Data/D2 - Schools Data.RData")
+mooe.dt <- read_excel("Data/MOOE data.xlsx",2) %>%
+  select(school.id, school.mooe)
+rooms.dt <- read_excel("Data/Rooms data.xls", 1) %>%
+  rename(school.id = `School ID`)
+teachers.dt <- read_excel("Data/Teachers data.xls") %>%
+  mutate(school.id = as.numeric(school.id))
+
+schools_expanded.dt <- schools.dt %>% left_join(mooe.dt) %>%
+  left_join(rooms.dt) %>% left_join(teachers.dt)
+
+sum(is.na(schools_expanded.dt$school.mooe)) #2578 schools without MOOE data
+nrow(mooe.dt) - nrow(schools.dt) #2575 less?
+
+sum(is.na(schools_expanded.dt$rooms.standard.academic)) #246
+nrow(rooms.dt) - nrow(schools.dt) #191 more?
+
+sum(is.na(schools_expanded.dt$teachers.instructor)) #1563
+nrow(teachers.dt) - nrow(schools.dt) #1563 less
+
+schools.dt <- schools_expanded.dt
+
+rm(schools_expanded.dt, mooe.dt, rooms.dt, teachers.dt)
+save.image("Data/D4 - Schools Data Expanded.RData")
+
 # End ---------------------------------------------------------------------
