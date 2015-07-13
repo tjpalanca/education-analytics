@@ -6,6 +6,7 @@
 library(dplyr)
 library(reshape2)
 library(ggplot2)
+library(gridExtra)
 
 # Data --------------------------------------------------------------------
 load("Data/D4 - Schools Data Expanded.RData")
@@ -39,38 +40,68 @@ schools.dt <- schools.dt %>% mutate(
   mooe.ratio = school.mooe / enrollment.2015
 )
 
+# Standardization of schools ------------------------------------------------
+schools.dt %>%
+
+
 # Checking Plots ----------------------------------------------------------
 
-ggplot(schools.dt, aes(x = all.teacher.ratio)) +
+grid.arrange(ggplot(schools.dt, aes(x = all.teacher.ratio)) +
   geom_histogram(binwidth = 0.005) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,0.15))
+  coord_cartesian(xlim = c(0,0.1)),
 
 ggplot(schools.dt, aes(x = regular.teacher.ratio)) +
   geom_histogram(binwidth = 0.005) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,0.15))
+  coord_cartesian(xlim = c(0,0.1)),
 
 ggplot(schools.dt, aes(x = academic.room.ratio)) +
   geom_histogram(binwidth = 0.005) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,0.1))
+  coord_cartesian(xlim = c(0,0.075)),
 
 ggplot(schools.dt, aes(x = standard.room.ratio)) +
   geom_histogram(binwidth = 0.005) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,0.1))
+  coord_cartesian(xlim = c(0,0.075)),
 
 ggplot(schools.dt, aes(x = full.room.ratio)) +
   geom_histogram(binwidth = 0.005) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,0.1))
+  coord_cartesian(xlim = c(0,0.075)),
 
 ggplot(schools.dt, aes(x = mooe.ratio)) +
   geom_histogram(binwidth = 100) +
   geom_rug() +
-  coord_cartesian(xlim = c(0,5000))
+  coord_cartesian(xlim = c(0,2000)),
 
+ncol = 2, main = "Capacity Metrics")
+
+ggplot(schools.dt %>% select(school.id, regular.teacher.ratio, all.teacher.ratio) %>%
+         melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
+       aes(x = metric, y = value)) +
+  geom_violin()
+
+ggplot(schools.dt %>% select(school.id, standard.room.ratio, academic.room.ratio,
+                             full.room.ratio) %>%
+         melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
+       aes(x = metric, y = value)) +
+  geom_violin() +
+  coord_cartesian(ylim = c(0,0.075))
+
+ggplot(schools.dt %>% select(school.id, standard.room.ratio, academic.room.ratio,
+                             full.room.ratio) %>%
+         melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
+       aes(x = metric, y = value)) +
+  geom_violin() +
+  coord_cartesian(ylim = c(0,0.075))
+
+ggplot(schools.dt %>% select(school.id, mooe.ratio) %>%
+         melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
+       aes(x = metric, y = value)) +
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0,2000))
 
 # To Do:
 # 4. Compute for capacity metrics and cluster the schools
