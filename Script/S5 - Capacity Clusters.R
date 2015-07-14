@@ -99,12 +99,14 @@ grid.arrange(
            melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
          aes(x = metric, y = 1/value)) +
     geom_boxplot() +
+    scale_y_reverse() +
     coord_cartesian(ylim = c(0,100)),
   ggplot(schools.dt %>% select(school.id, standard.room.ratio, academic.room.ratio,
                                full.room.ratio) %>%
            melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
          aes(x = metric, y = 1/value)) +
     geom_boxplot() +
+    scale_y_reverse() +
     coord_cartesian(ylim = c(0,100)),
   ggplot(schools.dt %>% select(school.id, mooe.ratio) %>%
            melt(id.var = "school.id", variable.name = "metric", value.name = "value"),
@@ -114,9 +116,66 @@ grid.arrange(
   ncol = 3
 )
 
-# It is quite obvious that outliers exist, and these shall be examined separately. For plotting purposes, we winsorize the variables at the 1st and 99th percentile.
+# Winsorization ------------------------------------------------------------
+Winsorize <- function(vector, p = 0.01, upper = T, lower = T, clean = T) {
+  winsorized.vec <- vector
+  if (clean == T) winsorized.vec[is.na(vector) | is.infinite(vector)] <- NA
+  if (upper == T) winsorized.vec[winsorized.vec > quantile(vector, 1-p, na.rm = T)] <-
+      quantile(vector, 1-p)
+  if (lower == T) winsorized.vec[winsorized.vec < quantile(vector, p, na.rm = T)] <-
+      quantile(vector, p)
+  return(winsorized.vec)
+}
 
+# It is quite obvious that outliers exist, and these shall be examined separately. For plotting purposes, we winsorize the variables at the 2.5th and 97.5th percentile.
 
+# Exploration (winsorized) -------------------------------------------------
+
+schools_capacity_winsorized.dt <- schools.dt %>%
+  mutate(all.teacher.ratio = Winsorize(all.teacher.ratio, 0.025, upper = F),
+         regular.teacher.ratio = Winsorize(regular.teacher.ratio, 0.025, upper = F),
+         academic.room.ratio = Winsorize(academic.room.ratio, 0.025, upper = F),
+         standard.room.ratio = Winsorize(standard.room.ratio, 0.025, upper = F),
+         full.room.ratio = Winsorize(full.room.ratio, 0.025, upper = F),
+         mooe.ratio = Winsorize(mooe.ratio, 0.025, lower = F))
+
+grid.arrange(
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = 1/all.teacher.ratio)) +
+    geom_histogram(binwidth = 1, color = NA, fill = "darkgreen") +
+    geom_rug() + xlab("Student to Teacher Ratio") +
+    scale_x_reverse() +
+    histtheme.tm,
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = 1/regular.teacher.ratio)) +
+    geom_histogram(binwidth = 1, color = NA, fill = "darkgreen") +
+    geom_rug() + xlab("Regular Teachers to Student Ratio") +
+    scale_x_reverse() +
+    histtheme.tm,
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = mooe.ratio)) +
+    geom_histogram(binwidth = 20,  color = NA, fill = "darkblue") +
+    geom_rug() + xlab("MOOE to Student Ratio") +
+    histtheme.tm,
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = 1/academic.room.ratio)) +
+    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
+    scale_x_reverse() +
+    geom_rug() + xlab("Student to Academic Room Ratio") +
+    histtheme.tm,
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = 1/standard.room.ratio)) +
+    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
+    scale_x_reverse() +
+    geom_rug() + xlab("Student to Standard Room Ratio") +
+    histtheme.tm,
+  ggplot(schools_capacity_winsorized.dt,
+         aes(x = 1/full.room.ratio)) +
+    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
+    scale_x_reverse() +
+    geom_rug() + xlab("Student to All Rooms Ratio") +
+    histtheme.tm,
+  ncol = 3, main = "\nCapacity Metrics (Winsorized)\n")
 
 
 
