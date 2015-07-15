@@ -44,7 +44,14 @@ schools.dt <- schools.dt %>% mutate(
   mooe.ratio = school.mooe / enrollment.2015
 )
 
-# Standardization of schools ------------------------------------------------
+# Data Cleaning ------------------------------------------------
+
+# Remove schools with zero rooms or teachers.
+schools.dt <- schools.dt %>%
+  filter(all.teacher.ratio != 0,
+         full.room.ratio != 0,
+         mooe.ratio != 0)
+
 # Makes sure that only schools with complete capacity metrics are included in the analysis
 schools.dt <- schools.dt %>%
   filter(is.na(all.teacher.ratio) + is.na(regular.teacher.ratio) +
@@ -132,18 +139,15 @@ grid.arrange(
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
 
 
-ggplot(schools.dt, aes(x = all.teacher.ratio, y = academic.room.ratio)) +
-  geom_point() +
-  scale_x_log10() +
-  scale_y_log10()
-with(schools.dt,
-     length(school.name[teachers.instructor +
-                 teachers.mobile +
-                 teachers.regular +
-                 teachers.sped == 0])
-)
+ggplot(schools.dt, aes(x = log10(full.room.ratio), y = log10(mooe.ratio),
+                       color = school.region)) +
+  facet_wrap(~school.region.name) +
+  geom_point(alpha = 1) +
+  geom_smooth() +
+  # scale_y_continuous(labels = ) +
+  coord_fixed()
 
-# Data Quality Issue: schools with zero teachers or zero rooms.
+
 
 
 
