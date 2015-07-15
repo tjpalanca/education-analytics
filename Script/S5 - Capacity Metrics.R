@@ -62,48 +62,88 @@ histtheme.tm <-
         axis.title.y = element_blank(),
         axis.title.x = element_text(face = "bold"))
 
+reciprocal <- function(x) 1/x
+
 grid.arrange(
-  ggplot(schools.dt, aes(x = 1/all.teacher.ratio)) +
-    geom_histogram(binwidth = 1, color = NA, fill = "darkgreen") +
-    geom_rug() + xlab("Student to Teacher Ratio") +
-    scale_x_reverse() +
-    # coord_cartesian(xlim = c(0,100)) +
+  ggplot(schools.dt, aes(x = all.teacher.ratio)) +
+    geom_histogram(color = NA, fill = "darkgreen") +
+    geom_rug() + xlab("Teacher to Student Ratio") +
     histtheme.tm,
-  ggplot(schools.dt, aes(x = 1/regular.teacher.ratio)) +
-    geom_histogram(binwidth = 1, color = NA, fill = "darkgreen") +
+  ggplot(schools.dt, aes(x = regular.teacher.ratio)) +
+    geom_histogram(color = NA, fill = "darkgreen") +
     geom_rug() + xlab("Regular Teachers to Student Ratio") +
-    scale_x_reverse() +
-    # coord_cartesian(xlim = c(0,100)) +
     histtheme.tm,
   ggplot(schools.dt, aes(x = mooe.ratio)) +
-    geom_histogram(binwidth = 20,  color = NA, fill = "darkblue") +
+    geom_histogram(color = NA, fill = "darkblue") +
     geom_rug() + xlab("MOOE to Student Ratio") +
-    # coord_cartesian(xlim = c(0,2000)) +
     histtheme.tm,
-  ggplot(schools.dt, aes(x = 1/academic.room.ratio)) +
-    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
-    scale_x_reverse() +
-    geom_rug() + xlab("Student to Academic Room Ratio") +
-    # coord_cartesian(xlim = c(0,100)) +
+  ggplot(schools.dt, aes(x = academic.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("Academic Room to Student Ratio") +
     histtheme.tm,
-  ggplot(schools.dt, aes(x = 1/standard.room.ratio)) +
-    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
-    scale_x_reverse() +
-    geom_rug() + xlab("Student to Standard Room Ratio") +
-    # coord_cartesian(xlim = c(0,100)) +
+  ggplot(schools.dt, aes(x = standard.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("Standard Room to Student Ratio") +
     histtheme.tm,
-  ggplot(schools.dt, aes(x = 1/full.room.ratio)) +
-    geom_histogram(binwidth = 1, color = NA, fill = "darkorange") +
-    scale_x_reverse() +
-    geom_rug() + xlab("Student to All Rooms Ratio") +
-    # coord_cartesian(xlim = c(0,100)) +
+  ggplot(schools.dt, aes(x = full.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("All Rooms to Student Ratio") +
     histtheme.tm,
-  ncol = 3, main = "Capacity Metrics\n")
+  ncol = 3, main = textGrob("\nCapacity Metrics\n",
+                            gp = gpar(fontfamily = "Raleway", fontface = "bold")))
 
 # Many positive outliers, logarithmic transformation will unskew the distributions
 # (except MOOE per student which is still positively skewed).
 
+# Reversed the Teacher/Student and Room/Student ratios to produce more intuitive labels
 
+grid.arrange(
+  ggplot(schools.dt, aes(x = all.teacher.ratio)) +
+    geom_histogram(color = NA, fill = "darkgreen") +
+    geom_rug() + xlab("Teacher to Student Ratio") +
+    scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,1000)) +
+    histtheme.tm,
+  ggplot(schools.dt, aes(x = regular.teacher.ratio)) +
+    geom_histogram(color = NA, fill = "darkgreen") +
+    geom_rug() + xlab("Regular Teachers to Student Ratio") +
+    scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,1000)) +
+    histtheme.tm,
+  ggplot(schools.dt, aes(x = mooe.ratio)) +
+    geom_histogram(color = NA, fill = "darkblue") +
+    geom_rug() + xlab("MOOE to Student Ratio") +
+    scale_x_log10(breaks = c(100, 500, 1000, 3000, 7000, 10000)) +
+    histtheme.tm,
+  ggplot(schools.dt, aes(x = academic.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("Academic Room to Student Ratio") +
+    scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
+    histtheme.tm,
+  ggplot(schools.dt, aes(x = standard.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("Standard Room to Student Ratio") +
+    scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
+    histtheme.tm,
+  ggplot(schools.dt, aes(x = full.room.ratio)) +
+    geom_histogram(color = NA, fill = "darkorange") +
+    geom_rug() + xlab("All Rooms to Student Ratio") +
+    scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
+    histtheme.tm,
+  ncol = 3, main = textGrob("\nCapacity Metrics\n",
+                            gp = gpar(fontfamily = "Raleway", fontface = "bold")))
+
+
+ggplot(schools.dt, aes(x = all.teacher.ratio, y = academic.room.ratio)) +
+  geom_point() +
+  scale_x_log10() +
+  scale_y_log10()
+with(schools.dt,
+     length(school.name[teachers.instructor +
+                 teachers.mobile +
+                 teachers.regular +
+                 teachers.sped == 0])
+)
+
+# Data Quality Issue: schools with zero teachers or zero rooms.
 
 
 
