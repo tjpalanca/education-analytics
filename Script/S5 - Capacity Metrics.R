@@ -1,6 +1,5 @@
 # Data Analytics for Education
 # S5 - Capacity Metrics
-
 # July 10, 2015
 
 # Libraries ---------------------------------------------------------------
@@ -138,20 +137,27 @@ grid.arrange(
   ncol = 3, main = textGrob("\nCapacity Metrics\n",
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
 
+library(rgl)
+with(schools.dt,
+     plot3d(x = log10(all.teacher.ratio),
+            y = log10(full.room.ratio),
+            z = log10(mooe.ratio),
+            size = 1, col = "darkgreen", box = F, main = "Capacity Metrics"
+            )
+     )
 
-ggplot(schools.dt, aes(x = log10(full.room.ratio), y = log10(mooe.ratio),
-                       color = school.region)) +
-  facet_wrap(~school.region.name) +
-  geom_point(alpha = 1) +
-  geom_smooth() +
-  # scale_y_continuous(labels = ) +
-  coord_fixed()
+ggplot(schools.dt, aes(x = all.teacher.ratio, y = enrollment.2014)) +
+  geom_point() + geom_smooth()
+
+ggplot(schools.dt, aes(x = mooe.ratio, y = enrollment.2015)) +
+  geom_point() + geom_smooth()
+
+ggplot(schools.dt, aes(x = log10(all.teacher.ratio), y = log10(enrollment.2013))) +
+  geom_point(alpha = 0.1) + geom_smooth()
 
 
+# There seem to be no discernible clusters in the capacity metrics. For this example, we shall just focus on the outliers. We shall also attempt hierarchical clustering.
 
 
-
-
-# To Do:
-# 4. Compute for capacity metrics and cluster the schools
-# 5. Check for the upper limit on capacity metrics using correlates
+# Save Out ----------------------------------------------------------------
+save.image("Data/D5 - Capacity Data.RData")
