@@ -1,10 +1,6 @@
 ## Licensing
 
-<<<<<<< HEAD
 All rights reserved, except for those explicitly required to be provided by the GitHub Terms of Use. No part of this content may be reproduced, distributed, or transmitted in any form or by any means, without my prior explicit permission, except in the case of brief quotations, social media, and certain other noncommercial uses permitted by copyright law. You may not modify or otherwise benefit from the use of this content without my prior explicit permission.
-=======
-All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without my prior explicit permission, except in the case of brief quotations, social media, and certain other noncommercial uses permitted by copyright law. 
->>>>>>> fa90361bb980a0d943f80a0729f2d345c8a1ce83
 
 ## Permission Requests
 
