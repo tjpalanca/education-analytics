@@ -1,6 +1,6 @@
 ## Licensing
 
-All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without my prior explicit perssion, except in the case of brief quotations and certain other noncommercial uses permitted by copyright law. 
+All rights reserved. No part of this publication may be reproduced, distributed, or transmitted in any form or by any means, including photocopying, recording, or other electronic or mechanical methods, without my prior explicit permission, except in the case of brief quotations, social media, and certain other noncommercial uses permitted by copyright law. 
 
 ## Permission Requests
 
