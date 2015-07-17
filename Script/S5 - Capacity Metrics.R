@@ -200,13 +200,12 @@ dev.off()
 # There seem to be no discernible clusters in the capacity metrics. For this example, we shall just focus on the outliers. We shall also attempt hierarchical clustering.
 
 library(rgl)
-with(schools.dt,
-     plot3d(x = log10(all.teacher.ratio),
-            y = log10(full.room.ratio),
-            z = log10(mooe.ratio),
-            size = 1, col = "darkgreen", box = F, main = "Capacity Metrics"
-     )
-)
+open3d()
+plot3d(x = log10(schools.dt$all.teacher.ratio),
+       y = log10(schools.dt$full.room.ratio),
+       z = log10(schools.dt$mooe.ratio),
+       size = 1, col = "darkgreen", box = F, main = "Capacity Metrics")
+play3d(spin3d(axis = c(1,0,0), rpm = 30), duration = Inf)
 
 movie3d()
 
