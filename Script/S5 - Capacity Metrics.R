@@ -9,11 +9,13 @@ library(ggplot2)
 library(grid)
 library(gridExtra)
 library(extrafont)
+library(rgl)
 loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
 load("Data/D4 - Schools Data Expanded.RData")
 load("Data/D1 - Enrollment Data.RData")
+imconvertstring<-"\"C:\\Program Files\\ImageMagick-6.9.1-Q16\\convert.exe\" -delay 1x%d %s*.png %s.%s"
 
 # Metric Construction ------------------------------------------------------
 
@@ -169,6 +171,10 @@ grid.arrange(
                   x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
               family = "Open Sans", size = 4, vjust = 0.1) +
     scale_y_log10(labels = reciprocal, breaks = 1/c(2,10,15,25,50,75,100,250,1000)) +
+    scale_color_manual(name = "School Classification",
+                       values = c("darkgreen", "darkblue")) +
+    scale_fill_manual(name = "School Classification",
+                      values = c("darkgreen", "darkblue")) +
     ggtitle("Teacher\nCapacity\n") + boxplot.tm,
   ggplot(schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
                                `Students per\nStandard\nRoom` = standard.room.ratio,
@@ -188,6 +194,10 @@ grid.arrange(
                   x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
               family = "Open Sans", size = 4, vjust = 0.1) +
     scale_y_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
+    scale_color_manual(name = "School Classification",
+                       values = c("darkgreen", "darkblue")) +
+    scale_fill_manual(name = "School Classification",
+                      values = c("darkgreen", "darkblue")) +
     ggtitle("Room\nCapacity\n") + boxplot.tm,
   ggplot(schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
                                school.classification) %>%
@@ -203,9 +213,11 @@ grid.arrange(
                   x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
               family = "Open Sans", size = 4) +
     scale_y_log10(breaks = c(100, 500, 1000, 3000, 7000, 10000)) +
+    scale_color_manual(name = "School Classification",
+                       values = c("darkgreen", "darkblue")) +
+    scale_fill_manual(name = "School Classification",
+                      values = c("darkgreen", "darkblue")) +
     ggtitle("Budgetary\nCapacity\n") +
-    scale_color_discrete(name = "School Classification") +
-    scale_fill_discrete(name = "School Classification") +
     boxplot.tm + theme(legend.position = "right"),
   ncol = 3, main = textGrob("\nCapacity Metrics", gp = gpar(fontfamily = "Raleway",
                                                             fontface = "bold",
@@ -214,20 +226,43 @@ grid.arrange(
   widths = c(0.275 - 0.025/2, 0.375 - 0.025/2, 0.375))
 dev.off()
 
+rm(boxplot.tm, histtheme.tm)
+
 # 3D Plot for Clusters ----------------------------------------------------
-# There seem to be no discernible clusters in the capacity metrics. For this example, we shall just focus on the outliers. We shall also attempt hierarchical clustering.
 
-library(rgl)
-open3d()
-plot3d(x = log10(schools.dt$all.teacher.ratio),
-       y = log10(schools.dt$full.room.ratio),
-       z = log10(schools.dt$mooe.ratio),
-       size = 1, col = "darkgreen", box = F, main = "Capacity Metrics")
-play3d(spin3d(axis = c(1,0,0), rpm = 30), duration = Inf)
+schools_elem.dt <- schools.dt %>% filter(school.classification == "Elementary")
+schools_seco.dt <- schools.dt %>% filter(school.classification == "Secondary")
 
-movie3d()
+par3d(windowRect  = c(100, 100, 600, 600), family = "Open Sans", cex = 0.8)
+plot3d(x = log10(schools_elem.dt$all.teacher.ratio),
+         y = log10(schools_elem.dt$full.room.ratio),
+         z = log10(schools_elem.dt$mooe.ratio),
+         size = 1, col = "darkgreen", box = F,
+       xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
+        dir = paste(getwd(),"/Output", sep = ""),
+        movie = "O6_-_Elementary_Capacity_Plot")
 
+file.rename("Output/O6_-_Elementary_Capacity_Plot.gif",
+            "Output/O6 - Elementary Capacity Plot.gif")
 
+par3d(windowRect  = c(100, 100, 600, 600), family = "Open Sans", cex = 0.8)
+plot3d(x = log10(schools_seco.dt$all.teacher.ratio),
+       y = log10(schools_seco.dt$full.room.ratio),
+       z = log10(schools_seco.dt$mooe.ratio),
+       size = 1, col = "darkblue", box = F,
+       xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
+        dir = paste(getwd(),"/Output", sep = ""),
+        movie = "O6_-_Secondary_Capacity_Plot")
+
+file.rename("Output/O6_-_Secondary_Capacity_Plot.gif",
+            "Output/O6 - Secondary Capacity Plot.gif")
+
+rm(schools_elem.dt, schools_seco.dt)
+rm(reciprocal)
+
+# Note: There seem to be no discernible clusters in the capacity metrics. For this example, we shall just focus on the outliers. We shall also attempt hierarchical clustering.
 
 # Save Out ----------------------------------------------------------------
 save.image("Data/D5 - Capacity Data.RData")
