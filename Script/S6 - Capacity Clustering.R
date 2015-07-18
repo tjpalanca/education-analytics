@@ -7,8 +7,14 @@ library(dplyr)
 
 # Data --------------------------------------------------------------------
 load("Data/D5 - Capacity Data.RData")
+schools_elem.dt <- schools.dt %>% filter(school.classification == "Elementary")
+schools_seco.dt <- schools.dt %>% filter(school.classification == "Secondary")
+rm(schools.dt)
 
 # Hierarchical Clustering -------------------------------------------------
-capacity.hc <- hclust(dist(scale(schools.dt %>%
-                                   select(all.teacher.ratio, full.room.ratio,
-                                          mooe.ratio))), method = "ward.D")
+
+set.seed(7292)
+elem_capacity.kc <- kmeans(scale(schools_elem.dt %>% select(all.teacher.ratio, full.room.ratio, mooe.ratio)),
+                             centers = round(nrow(schools_elem.dt)/3))
+elem_capacity.hc <- hclust(dist(elem_capacity.kc$centers))
+plot(elem_capacity.hc)
