@@ -157,15 +157,17 @@ grid.arrange(
                                school.classification) %>%
            melt(variable.name = "metric", value.name = "value"),
          aes(x = metric, y = value + min(value[value != min(value)]))) +
-    facet_wrap(~school.classification, ncol = 1) +
-    geom_boxplot(alpha = 0.5, color = "forestgreen", fill = "forestgreen") +
+    geom_boxplot(alpha = 0.5, aes(fill = school.classification,
+                                  color = school.classification)) +
     geom_text(data = schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
                                            `Students per \nRegular\nTeacher` = regular.teacher.ratio,
                                            school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>% group_by(metric, school.classification) %>%
+                melt(variable.name = "metric", value.name = "value") %>%
+                group_by(metric, school.classification) %>%
                 summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(1/value, digits = 3), y = value), family = "Open Sans", size = 4,
-              vjust = 0.1) +
+              aes(label = format(1/value, digits = 3), y = value,
+                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
+              family = "Open Sans", size = 4, vjust = 0.1) +
     scale_y_log10(labels = reciprocal, breaks = 1/c(2,10,15,25,50,75,100,250,1000)) +
     ggtitle("Teacher\nCapacity\n") + boxplot.tm,
   ggplot(schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
@@ -174,36 +176,42 @@ grid.arrange(
                                school.classification) %>%
            melt(variable.name = "metric", value.name = "value"),
          aes(x = metric, y = value + min(value[value != min(value)]))) +
-    facet_wrap(~school.classification, ncol = 1) +
-    geom_boxplot(alpha = 0.5, color = "dodgerblue3", fill = "dodgerblue3") +
+    geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
     geom_text(data = schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
                                            `Students per\nStandard\nRoom` = standard.room.ratio,
                                            `Students per\nRoom\n(Full Capacity)` = full.room.ratio,
                                            school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>% group_by(metric, school.classification) %>%
+                melt(variable.name = "metric", value.name = "value") %>%
+                group_by(metric, school.classification) %>%
                 summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(1/value, digits = 3), y = value), family = "Open Sans", size = 4,
-              vjust = 0.1) +
+              aes(label = format(1/value, digits = 3), y = value,
+                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
+              family = "Open Sans", size = 4, vjust = 0.1) +
     scale_y_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
     ggtitle("Room\nCapacity\n") + boxplot.tm,
   ggplot(schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
                                school.classification) %>%
            melt(variable.name = "metric", value.name = "value"),
          aes(x = metric, y = value + min(value[value != min(value)]))) +
-    facet_wrap(~school.classification, ncol = 1) +
-    geom_boxplot(alpha = 0.5, color = "firebrick1", fill = "firebrick1") +
+    geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
     geom_text(data = schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
                                            school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>% group_by(metric, school.classification) %>%
+                melt(variable.name = "metric", value.name = "value") %>%
+                group_by(metric, school.classification) %>%
                 summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(value, digits = 3), y = value + 200), family = "Open Sans", size = 4) +
+              aes(label = format(value, digits = 3), y = value + 200,
+                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
+              family = "Open Sans", size = 4) +
     scale_y_log10(breaks = c(100, 500, 1000, 3000, 7000, 10000)) +
-    ggtitle("Budgetary\nCapacity\n") + boxplot.tm,
+    ggtitle("Budgetary\nCapacity\n") +
+    scale_color_discrete(name = "School Classification") +
+    scale_fill_discrete(name = "School Classification") +
+    boxplot.tm + theme(legend.position = "right"),
   ncol = 3, main = textGrob("\nCapacity Metrics", gp = gpar(fontfamily = "Raleway",
                                                             fontface = "bold",
                                                             fontsize = 18,
                                                             fill = "gray98")),
-  widths = c(2/6, 2.5/6, 1.5/6))
+  widths = c(0.275 - 0.025/2, 0.375 - 0.025/2, 0.375))
 dev.off()
 
 # 3D Plot for Clusters ----------------------------------------------------
