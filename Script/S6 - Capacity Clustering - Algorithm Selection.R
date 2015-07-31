@@ -1,5 +1,5 @@
 # Data Analytics for Education
-# S5 - Capacity Clustering - Algorithm Selection
+# S6 - Capacity Clustering - Algorithm Selection
 # July 16, 2015
 
 # Libraries ---------------------------------------------------------------
@@ -68,7 +68,8 @@ file.rename(from = "Output/clusterplot.gif", to = "Output/O8A - Clustering Proce
 # Plot cluster profiles
 ggsave("Output/O9A - Clustering Alternative 1 - Profiles.png",
        ggplot(schools_elem.dt %>% melt(id.vars = "h.cluster",
-                                       measure.vars = c("all.teacher.ratio", "full.room.ratio", "mooe.ratio")),
+                                       measure.vars = c("all.teacher.ratio", "full.room.ratio",
+                                                        "mooe.ratio")),
               aes(x = as.factor(h.cluster), y = value, color = as.factor(h.cluster))) +
          facet_wrap(~variable, ncol = 3, scales = "free") +
          geom_jitter(alpha = 0.05) +
@@ -76,7 +77,8 @@ ggsave("Output/O9A - Clustering Alternative 1 - Profiles.png",
          scale_y_log10() +
          theme_minimal() +
          theme(text = element_text(family = "Open Sans"),
-               plot.title = element_text(face = "bold", hjust = 0)))
+               plot.title = element_text(face = "bold", hjust = 0),
+               legend.position = "none"))
 
 # Clustering Alternative 2 (Elementary) --------------------------------------------------------
 # One-step clustering: just k-means directly (with same k).
@@ -114,7 +116,8 @@ ggplot(schools_elem.dt %>% melt(id.vars = "k2.cluster",
   scale_y_log10() +
   theme_minimal() +
   theme(text = element_text(family = "Open Sans"),
-        plot.title = element_text(face = "bold", hjust = 0)))
+        plot.title = element_text(face = "bold", hjust = 0),
+        legend.position = "none"))
 
 # CONCLUSION --------------------------------------------------------------
 # It seems that direct k-means is better, probably due to the low number of dimensions.
