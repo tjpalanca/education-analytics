@@ -39,18 +39,18 @@ plotWSS <- function (data, max.num, title = "WSS Plot", ...) {
 
 wss_elem.gg <-
   plotWSS(scale(schools_elem.dt %>% select(all.teacher.ratio,
-                                         full.room.ratio,
-                                         mooe.ratio) %>%
-                mutate_each(funs = funs(log10))), max.num = 12, iter.max = 1000,
-        algorithm = "Lloyd", title = "WSS Plot - Elementary")
+                                           full.room.ratio,
+                                           mooe.ratio) %>%
+                  mutate_each(funs = funs(log10))), max.num = 12, iter.max = 1000,
+          algorithm = "Lloyd", title = "WSS Plot - Elementary")
 
 
 wss_seco.gg <-
   plotWSS(scale(schools_seco.dt %>% select(all.teacher.ratio,
-                                         full.room.ratio,
-                                         mooe.ratio) %>%
-                mutate_each(funs = funs(log10))), max.num = 12, iter.max = 1000,
-        algorithm = "Lloyd", title = "WSS Plot - Secondary")
+                                           full.room.ratio,
+                                           mooe.ratio) %>%
+                  mutate_each(funs = funs(log10))), max.num = 12, iter.max = 1000,
+          algorithm = "Lloyd", title = "WSS Plot - Secondary")
 
 png("Output/O10 - WSS Plots.png", height = 400, width = 800)
 grid.arrange(wss_elem.gg, wss_seco.gg, ncol = 2)
@@ -59,27 +59,32 @@ dev.off()
 rm(plotWSS, wss_elem.gg, wss_seco.gg)
 
 ## Results from the WSS plot seem to be inconclusive. However, if we were to stop
-## producing clusters at a point where the marginal reduction in WSS < 10%, then 7
+## producing clusters at a point where marginal reduction in WSS < 10%, then 7
 ## clusters is ideal.
 
 # Clustering --------------------------------------------------------------
 
-# Perform kmeans clustering with k = 7 for both elementary and secondary.
+k <- 7 # set number of clusters
+
+# Perform kmeans clustering for both elementary and secondary schools
 set.seed(721992)
-schools_elem.dt$cluster <- (kmeans(scale(schools_elem.dt %>% select(all.teacher.ratio,
-                                                                    full.room.ratio,
-                                                                    mooe.ratio) %>%
-                                           mutate_each(funs = funs(log10))),
-                                   centers = 7, iter.max = 1000))$cluster
+schools_elem.dt$cluster <- factor((kmeans(scale(schools_elem.dt %>%
+                                                  select(all.teacher.ratio,
+                                                         full.room.ratio,
+                                                         mooe.ratio) %>%
+                                                  mutate_each(funs = funs(log10))),
+                                          centers = k, iter.max = 1000))$cluster)
 
 set.seed(721992)
-schools_seco.dt$cluster <- (kmeans(scale(schools_seco.dt %>% select(all.teacher.ratio,
-                                                                    full.room.ratio,
-                                                                    mooe.ratio) %>%
-                                           mutate_each(funs = funs(log10))),
-                                   centers = 7, iter.max = 1000))$cluster
+schools_seco.dt$cluster <- factor((kmeans(scale(schools_seco.dt %>%
+                                                  select(all.teacher.ratio,
+                                                         full.room.ratio,
+                                                         mooe.ratio) %>%
+                                                  mutate_each(funs = funs(log10))),
+                                          centers = k, iter.max = 1000))$cluster)
 
 # Write Out ---------------------------------------------------------------
+rm(k)
 schools.dt <- rbind(schools_elem.dt, schools_seco.dt)
 save.image("Data/D6 - Capacity Clustering.RData")
 
