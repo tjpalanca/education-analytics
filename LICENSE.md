@@ -10,7 +10,7 @@ If you would like to use any content for your own work, I will give permission u
 
 * Please contact me first through the [blog contact form](http://www.jumbodumbothoughts.com/p/contact.html).
 * Unless explicit written or e-mail permission has been provided, you may not use any content.
-* This content may not be used for commercial purposes.
+* This content may not be used for commercial purposes, or for submission in academic work without citation.
 * I retain the rights to use this content for any purpose.
 * I would appreciate a copy of the paper or a link to your work.
 * No warranties are provided.
