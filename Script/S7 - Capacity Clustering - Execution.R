@@ -59,12 +59,12 @@ dev.off()
 rm(plotWSS, wss_elem.gg, wss_seco.gg)
 
 ## Results from the WSS plot seem to be inconclusive. However, if we were to stop
-## producing clusters at a point where marginal reduction in WSS < 10%, then 7
+## producing clusters at a point before marginal reduction in WSS < 10%, then 6
 ## clusters is ideal.
 
 # Clustering --------------------------------------------------------------
 
-k <- 7 # set number of clusters
+k <- 6 # set number of clusters
 
 # Perform kmeans clustering for both elementary and secondary schools
 set.seed(721992)
