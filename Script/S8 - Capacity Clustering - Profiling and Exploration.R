@@ -10,6 +10,7 @@ library(gridExtra)
 library(ggmap)
 library(extrafont)
 loadfonts()
+loadfonts(device = "postscript")
 library(rgl)
 library(stringr)
 library(xtable)
@@ -142,6 +143,14 @@ schools_elem_profiles_formatted.dt <-
                     `MOOE\nper Student` = round(mooe, 0)) %>%
              select(-teacher, -rooms, -mooe)
 
+pdf("Output/O15A - Elementary Schools Cluster Profiles.pdf")
+grid.table(schools_elem_profiles_formatted.dt, core.just = "left",
+           gpar.coretext = gpar(fontfamily = "Arial Narrow", fontsize = 10),
+           gpar.coltext = gpar(fontfamily = "Arial Narrow", fontface = "bold",
+                               fontsize = 12),
+           show.rownames = F)
+dev.off()
+
 # Secondary Schools
 
 schools_seco_profiles.dt <-
@@ -177,3 +186,12 @@ schools_seco_profiles_formatted.dt <-
          `Students\nper Room` = round(rooms, 0),
          `MOOE\nper Student` = round(mooe, 0)) %>%
   select(-teacher, -rooms, -mooe)
+
+pdf("Output/O15B - Secondary Schools Cluster Profiles.pdf")
+grid.table(schools_seco_profiles_formatted.dt, core.just = "left",
+           gpar.coretext = gpar(fontfamily = "Arial Narrow", fontsize = 10),
+           gpar.coltext = gpar(fontfamily = "Arial Narrow", fontface = "bold",
+                               fontsize = 12),
+           show.rownames = F)
+dev.off()
+
