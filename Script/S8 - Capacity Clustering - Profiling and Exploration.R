@@ -7,17 +7,15 @@ library(dplyr)
 library(reshape2)
 library(ggplot2)
 library(gridExtra)
-library(ggplot2)
 library(ggmap)
 library(extrafont)
-loadfonts(quiet = T)
+loadfonts()
 library(rgl)
 library(stringr)
 library(xtable)
 
 # Data --------------------------------------------------------------------
 load("Data/D6 - Capacity Clustering.RData")
-
 
 # Functions ---------------------------------------------------------------
 ggplot_colors <- function (n) {
@@ -144,4 +142,38 @@ schools_elem_profiles_formatted.dt <-
                     `MOOE\nper Student` = round(mooe, 0)) %>%
              select(-teacher, -rooms, -mooe)
 
-xtable(schools_elem_profiles_formatted.dt, type = "html")
+# Secondary Schools
+
+schools_seco_profiles.dt <-
+  schools_seco.dt %>% group_by(cluster) %>%
+  summarise(teacher = 1/mean(all.teacher.ratio),
+            rooms = 1/mean(full.room.ratio),
+            mooe = mean(mooe.ratio))
+
+schools_seco_profiles.dt$name <-
+  c("Left Behind",
+    "Close Second",
+    "Garden Variety",
+    "Brain Drain",
+    "Jam Packed",
+    "Head of the Pack")
+
+schools_seco_profiles.dt$order <-
+  c(1,5,2,4,3,6)
+
+schools_seco_profiles.dt$description <-
+  c("These schools are the most at-risk due to shortages in all three aspects: rooms, teachers, and budget.",
+    "These schools aren't far from the top. Capacity is unlikely to be a pressing issue.",
+    "These are garden variety schools - not the best, but not the worst either.",
+    "These schools risk empty rooms and unspent budgets due to lack of teachers.",
+    "Rooms are jam packed as facilities have failed to keep up with enrollment growth.",
+    "With ample numbers of teachers, rooms, and generous budgets, these schools are least likely to face capacity issues.")
+
+schools_seco_profiles_formatted.dt <-
+  schools_seco_profiles.dt %>% arrange(desc(order)) %>%
+  select(Cluster = name, Description = description, teacher, rooms, mooe) %>%
+  mutate(Description = str_wrap(Description, 50)) %>%
+  mutate(`Students\nper Teacher` = round(teacher,0),
+         `Students\nper Room` = round(rooms, 0),
+         `MOOE\nper Student` = round(mooe, 0)) %>%
+  select(-teacher, -rooms, -mooe)
