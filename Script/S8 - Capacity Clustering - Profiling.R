@@ -136,7 +136,8 @@ schools_elem_profiles.dt$description <-
 
 schools_elem_profiles_formatted.dt <-
   schools_elem_profiles.dt %>% arrange(desc(order)) %>%
-             select(Cluster = name, Description = description, teacher, rooms, mooe) %>%
+             select(Cluster = name, Description = description, teacher, rooms, mooe,
+                    cluster.num = cluster) %>%
              mutate(Description = str_wrap(Description, 50)) %>%
              mutate(`Students\nper Teacher` = round(teacher,0),
                     `Students\nper Room` = round(rooms, 0),
@@ -144,7 +145,7 @@ schools_elem_profiles_formatted.dt <-
              select(-teacher, -rooms, -mooe)
 
 pdf("Output/O15A - Elementary Schools Cluster Profiles.pdf")
-grid.table(schools_elem_profiles_formatted.dt, core.just = "left",
+grid.table(schools_elem_profiles_formatted.dt %>% select(-cluster.num), core.just = "left",
            gpar.coretext = gpar(fontfamily = "Arial Narrow", fontsize = 10),
            gpar.coltext = gpar(fontfamily = "Arial Narrow", fontface = "bold",
                                fontsize = 12),
@@ -180,7 +181,8 @@ schools_seco_profiles.dt$description <-
 
 schools_seco_profiles_formatted.dt <-
   schools_seco_profiles.dt %>% arrange(desc(order)) %>%
-  select(Cluster = name, Description = description, teacher, rooms, mooe) %>%
+  select(Cluster = name, Description = description, teacher, rooms, mooe,
+         cluster.num = cluster) %>%
   mutate(Description = str_wrap(Description, 50)) %>%
   mutate(`Students\nper Teacher` = round(teacher,0),
          `Students\nper Room` = round(rooms, 0),
@@ -188,7 +190,7 @@ schools_seco_profiles_formatted.dt <-
   select(-teacher, -rooms, -mooe)
 
 pdf("Output/O15B - Secondary Schools Cluster Profiles.pdf")
-grid.table(schools_seco_profiles_formatted.dt, core.just = "left",
+grid.table(schools_seco_profiles_formatted.dt  %>% select(-cluster.num), core.just = "left",
            gpar.coretext = gpar(fontfamily = "Arial Narrow", fontsize = 10),
            gpar.coltext = gpar(fontfamily = "Arial Narrow", fontface = "bold",
                                fontsize = 12),
