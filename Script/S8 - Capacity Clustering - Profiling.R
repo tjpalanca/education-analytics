@@ -1,5 +1,5 @@
 # Data Analytics for Education
-# S8 - Capacity Clustering - Profiling and Exploration
+# S8 - Capacity Clustering - Profiling
 # July 19, 2015
 
 # Libraries ---------------------------------------------------------------
@@ -9,7 +9,7 @@ library(ggplot2)
 library(gridExtra)
 library(ggmap)
 library(extrafont)
-loadfonts()
+loadfonts(device = "pdf")
 loadfonts(device = "postscript")
 library(rgl)
 library(stringr)
@@ -194,4 +194,10 @@ grid.table(schools_seco_profiles_formatted.dt, core.just = "left",
                                fontsize = 12),
            show.rownames = F)
 dev.off()
+
+# Write Out ---------------------------------------------------------------
+rm(schools_elem_profiles.dt, schools_seco_profiles.dt,
+   schools_elem_metrics.dt, schools_seco_metrics.dt, ggplot_colors)
+save.image("Data/D7 - Cluster Profiles.RData")
+
 
