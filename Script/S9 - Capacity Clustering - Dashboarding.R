@@ -59,20 +59,28 @@ schools_seco.dt <- schools_seco.dt %>%
 rm(PHprov.ref)
 
 # Metric Means Plot ----------------------------------------------------
-PlotMetricMeans <- function(data, cluster.num) {
-
+PlotMetrics <- function(data, cluster.num) {
+  reverselabel <- function (x) {
+    return(1/10^x)
+  }
+  all.data <- data %>%
+    select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
+    melt(variable.name = "metric", value.name = "value")
+  cluster.data <- data %>% filter(cluster == cluster.num) %>%
+    select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
+    melt(variable.name = "metric", value.name = "value")
+  ggplot(data = all.data, aes(x = log10(value))) +
+    facet_wrap(~metric, scales = "free_x", ncol = 1) +
+    geom_density(data = all.data, fill = "blue", alpha = 0.5) +
+    geom_density(data = cluster.data, fill = "orange", alpha = 0.5) +
+    scale_x_continuous(labels = reverselabel) +
+    theme(axis.text.y = element_blank(),
+          axis.ticks.y = element_blank(),
+          axis.title = element_blank())
 }
 
-ggplot(schools_elem.dt %>% filter(cluster.name == "Head of the Pack") %>%
-         select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
-         melt(variable.name = "metric", value.name = "value"),
-       aes(x = log10(value))) +
-  facet_wrap(~metric, ncol = 1, scales = "free_x") +
-  geom_density(fill = "blue", alpha = 0.5) +
-  geom_density(data = schools_elem.dt %>%
-                 select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
-                 melt(variable.name = "metric", value.name = "value"), fill = "orange",
-               alpha = 0.5)
+PlotMetrics(schools_elem.dt, cluster.num = 4)
+
 
 # Geographical Distribution Plot ----------------------------------------
 
