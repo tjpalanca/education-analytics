@@ -6,10 +6,12 @@
 library(maptools)
 library(ggplot2)
 library(dplyr)
+library(reshape2)
 library(pbapply)
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
+rm(schools.dt)
 
 # Shapefiles are from PhilGIS.org
 
@@ -53,11 +55,24 @@ schools_seco.dt <- schools_seco.dt %>%
             by = c("cluster" = "cluster.num")) %>%
   left_join(PHprov.ref)
 
+# Clean up
 rm(PHprov.ref)
 
 # Metric Means Plot ----------------------------------------------------
+PlotMetricMeans <- function(data, cluster.num) {
 
+}
 
+ggplot(schools_elem.dt %>% filter(cluster.name == "Head of the Pack") %>%
+         select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
+         melt(variable.name = "metric", value.name = "value"),
+       aes(x = log10(value))) +
+  facet_wrap(~metric, ncol = 1, scales = "free_x") +
+  geom_density(fill = "blue", alpha = 0.5) +
+  geom_density(data = schools_elem.dt %>%
+                 select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
+                 melt(variable.name = "metric", value.name = "value"), fill = "orange",
+               alpha = 0.5)
 
 # Geographical Distribution Plot ----------------------------------------
 
