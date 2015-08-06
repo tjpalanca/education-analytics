@@ -10,18 +10,37 @@ library(reshape2)
 library(pbapply)
 library(extrafont)
 loadfonts()
+library(scales)
+library(stringr)
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
 
 # Shapefiles are from PhilGIS.org
-
 PH.shp <- readShapeSpatial("Data/PH Shapefile/Country",
                                    proj4string = CRS("+proj=longlat +datum=WGS84"))
 PHprov.shp <- (readShapeSpatial("Data/PH Provinces Shapefile/Provinces",
                                 proj4string =
                                   CRS("+proj=longlat +datum=WGS84"),
                                 IDvar = "PROVINCE"))
+
+# Map Theme
+map.thm <-
+  theme(axis.text = element_blank(),
+        axis.title = element_blank(),
+        axis.ticks = element_blank(),
+        panel.background = element_blank(),
+        panel.grid = element_blank(),
+        plot.background = element_rect(fill = "gray98", color = NA),
+        legend.background = element_rect(fill = NA, color = NA))
+
+
+# Functions ---------------------------------------------------------------
+
+ggplot_colors <- function (n) {
+  colors = seq(15, 375, length = n+1)
+  hcl(h = colors, l = 65, c = 100)[1:n]
+}
 
 # Data Adjustments --------------------------------------------------------
 
@@ -130,16 +149,40 @@ PlotSurvivalRates <- function (data, cluster.num) {
 
 # Geographical Distribution Plot ----------------------------------------
 
-schools_elem_byprovince.dt <-
-  schools_elem.dt %>% group_by(school.province) %>% mutate(total.schools = n()) %>%
-  group_by(school.region, cluster.name) %>%
-  summarise(perc.schools = n()/mean(total.schools)) %>% ungroup()
+PlotProvincialMap <- function (data, shp, cluster.num) {
+  data_byprovince.dt <- data %>%
+    group_by(school.province.shp) %>%
+    mutate(total.schools = n()) %>%
+    group_by(school.province.shp, cluster, cluster.name) %>%
+    summarise(perc.schools = n()/mean(total.schools)) %>% ungroup() %>%
+    filter(cluster == cluster.num)
+  map.dt <- fortify(shp) %>%
+    left_join(data_byprovince.dt, by = c("id" = "school.province.shp"))
+  ggplot(map.dt, aes(x = long, y = lat, group = group, fill = perc.schools)) +
+    geom_polygon() +
+    geom_text(data = map.dt %>%
+                group_by(id) %>%
+                summarise(long = mean(long),
+                          lat = mean(lat),
+                          perc.schools = mean(perc.schools)) %>%
+                arrange(desc(perc.schools)) %>%
+                filter(row_number() %in% 1:5),
+              aes(label = id, group = str_wrap(id,8)),
+              size = 3, family = "Open Sans") +
+    scale_fill_gradient(limits = c(0,NA), labels = percent,
+                        low = "gray95", high = ggplot_colors(6)[cluster.num], na.value = "gray98",
+                        name = "% of Schools") +
+    coord_map() +
+    ggtitle("Geographic Distribution\n") +
+    map.thm +
+    theme(plot.title = element_text(size = 16, face = "bold", family = "Raleway", hjust = 0),
+          text = element_text(family = "Open Sans"))
+}
 
-ggplot(schools_elem_byregion.dt, aes(x = school.region, y = perc.schools,
-                                       color = cluster.name, fill = cluster.name)) +
-  facet_wrap(~cluster.name, ncol = 6) +
-  geom_bar(stat = "identity") +
-  coord_flip()
+PlotProvincialMap(schools_elem.dt, PHprov.shp, cluster.num = 2)
+
+]# Dashboard Construction --------------------------------------------------
+
 
 
 
