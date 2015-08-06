@@ -8,10 +8,11 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(pbapply)
+library(extrafont)
+loadfonts()
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
-rm(schools.dt)
 
 # Shapefiles are from PhilGIS.org
 
@@ -57,30 +58,75 @@ schools_seco.dt <- schools_seco.dt %>%
 
 # Clean up
 rm(PHprov.ref)
+rm(schools.dt)
 
 # Metric Means Plot ----------------------------------------------------
-PlotMetrics <- function(data, cluster.num) {
-  reverselabel <- function (x) {
-    return(1/10^x)
+
+PlotMetrics <- function (data, cluster.num) {
+  Trim <- function(vec, p = 0.01) {
+    newvec <- vec
+    newvec[vec > quantile(vec, 1-p)] <- NA
+    newvec[vec < quantile(vec, p)] <- NA
+    newvec
   }
+
+  # All data
   all.data <- data %>%
-    select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
+    select(`Students\nper Teacher` = all.teacher.ratio,
+           `Students\nper Room` = full.room.ratio,
+           `MOOE\nper Student` = mooe.ratio) %>%
+    melt(variable.name = "metric", value.name = "value") %>%
+    group_by(metric) %>% summarise(mean.value = mean(value),
+                                   max.value = quantile(value, 0.99),
+                                   min.value = quantile(value, 0.01)) %>%
+    ungroup()
+
+  # Winsorize data
+  cluster.data <- data %>%
+    rename(`Students\nper Teacher` = all.teacher.ratio,
+           `Students\nper Room` = full.room.ratio,
+           `MOOE\nper Student` = mooe.ratio)
+  cluster.data$`Students\nper Teacher` <- Trim(cluster.data$`Students\nper Teacher`)
+  cluster.data$`Students\nper Room` <- Trim(cluster.data$`Students\nper Room`)
+  cluster.data$`MOOE\nper Student` <- Trim(cluster.data$`MOOE\nper Student`)
+
+  # Generate cluster data
+  cluster.data <- cluster.data %>% filter(cluster == cluster.num) %>%
+    select(`Students\nper Teacher`,
+           `Students\nper Room`,
+           `MOOE\nper Student`) %>%
     melt(variable.name = "metric", value.name = "value")
-  cluster.data <- data %>% filter(cluster == cluster.num) %>%
-    select(all.teacher.ratio, full.room.ratio, mooe.ratio) %>%
-    melt(variable.name = "metric", value.name = "value")
-  ggplot(data = all.data, aes(x = log10(value))) +
-    facet_wrap(~metric, scales = "free_x", ncol = 1) +
-    geom_density(data = all.data, fill = "blue", alpha = 0.5) +
-    geom_density(data = cluster.data, fill = "orange", alpha = 0.5) +
-    scale_x_continuous(labels = reverselabel) +
-    theme(axis.text.y = element_blank(),
-          axis.ticks.y = element_blank(),
-          axis.title = element_blank())
+
+  # Plot chart
+  ggplot(data = all.data, aes(y = value, x = 1)) +
+    facet_wrap(~metric, ncol = 3,
+               scales = "free_y") +
+    geom_hline(data = all.data,
+               aes(yintercept = mean.value),
+               color = "red", alpha = 0.5) +
+    geom_violin(data = cluster.data,
+                aes(fill = metric),
+                alpha = 0.5) +
+    geom_blank(data = all.data, aes(y = max.value)) +
+    geom_blank(data = all.data, aes(y = min.value)) +
+    ggtitle("Capacity Metrics\n") +
+    scale_y_continuous(labels = function(x) {
+      format((x >= 1) * x + (x < 1) * (1/x), digits = 2)}) +
+    theme_minimal() +
+    theme(text = element_text(family = "Open Sans"),
+          axis.text.x = element_blank(),
+          axis.ticks.x = element_blank(),
+          axis.title = element_blank(),
+          legend.position = "none",
+          plot.title = element_text(family = "Raleway", face = "bold", hjust = 0),
+          strip.text = element_text(family = "Raleway", face = "bold", size = 10))
 }
 
-PlotMetrics(schools_elem.dt, cluster.num = 4)
+# Survival Rate Plot ------------------------------------------------------
 
+PlotSurvivalRates <- function (data, cluster.num) {
+
+}
 
 # Geographical Distribution Plot ----------------------------------------
 
@@ -95,16 +141,5 @@ ggplot(schools_elem_byregion.dt, aes(x = school.region, y = perc.schools,
   geom_bar(stat = "identity") +
   coord_flip()
 
-
-
-unique(PHprov.shp@data$PROVINCE)[!(
-  toupper(unique(PHprov.shp@data$PROVINCE)) %in%
-    toupper(unique(schools_elem.dt$school.province)))]
-
-unique(schools.dt$school.province)
-
-length(unique(schools_elem.dt$school.province))
-
-length()
 
 
