@@ -15,6 +15,9 @@ library(stringr)
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
+load("Data/D3 - CityMuni Data.RData")
+national.cohort.dt <- readRDS("Data/D8 - National Level Cohort Surival.rds")
+load("Data/D1 - Enrollment Data.RData")
 
 # Shapefiles are from PhilGIS.org
 PH.shp <- readShapeSpatial("Data/PH Shapefile/Country",
@@ -79,6 +82,19 @@ schools_seco.dt <- schools_seco.dt %>%
 rm(PHprov.ref)
 rm(schools.dt)
 
+# Clean up enrollment file
+enrolment.dt <- enrolment.dt[,1:5]
+eligibleschools.dt <- enrolment.dt %>% group_by(school.id) %>% summarise(count = n()) %>%
+  mutate(secondary = school.id > 300000) %>%
+  mutate(complete = (secondary == F & count == 56) | (secondary == T & count == 32)) %>%
+  filter(complete == T)
+enrolment.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$school.id, ]
+rm(eligibleschools.dt)
+
+# Compute dropout rates per school
+enrolment.dt$cohort <- enrolment.dt$school.id + enrolment.dt$year - as.numeric(enrolment.dt$grade)
+
+View(enrolment.dt %>% arrange(gender, year, grade))
 # Metric Means Plot ----------------------------------------------------
 
 PlotMetrics <- function (data, cluster.num) {
@@ -144,6 +160,7 @@ PlotMetrics <- function (data, cluster.num) {
 # Survival Rate Plot ------------------------------------------------------
 
 PlotSurvivalRates <- function (data, cluster.num) {
+  # Computation of Survival Rates
 
 }
 
@@ -167,21 +184,23 @@ PlotProvincialMap <- function (data, shp, cluster.num) {
                           perc.schools = mean(perc.schools)) %>%
                 arrange(desc(perc.schools)) %>%
                 filter(row_number() %in% 1:5),
-              aes(label = id, group = str_wrap(id,8)),
-              size = 3, family = "Open Sans") +
+              aes(label = str_wrap(id,10), group = str_wrap(id,8)),
+              size = 3, family = "Open Sans",
+              lineheight = 0.7) +
     scale_fill_gradient(limits = c(0,NA), labels = percent,
                         low = "gray95", high = ggplot_colors(6)[cluster.num], na.value = "gray98",
                         name = "% of Schools") +
     coord_map() +
-    ggtitle("Geographic Distribution\n") +
+    ggtitle("Geographic Distribution") +
     map.thm +
     theme(plot.title = element_text(size = 16, face = "bold", family = "Raleway", hjust = 0),
-          text = element_text(family = "Open Sans"))
+          text = element_text(family = "Open Sans"),
+          legend.position = "bottom")
 }
 
-PlotProvincialMap(schools_elem.dt, PHprov.shp, cluster.num = 2)
+PlotProvincialMap(schools_elem.dt, PHprov.shp, cluster.num = 4)
 
-]# Dashboard Construction --------------------------------------------------
+# Dashboard Construction --------------------------------------------------
 
 
 
