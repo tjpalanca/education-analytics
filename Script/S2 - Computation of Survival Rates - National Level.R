@@ -39,6 +39,9 @@ ggplot(survival.dt %>% filter(grade != "Kinder"), aes(x = grade, y = enrollment,
   geom_path() +
   theme_bw()
 
+# It doesn't seem that thee are significant deviations across the partial cohorts.
+# Feasible to merge.
+
 survival_append.dt <- data.frame(grade = rep("Grade 1", 6),
                                  year = rep(seq(2013,2015), 2),
                                  gender = rep(c("Female", "Male"),3),
@@ -161,5 +164,9 @@ grid.arrange(gender.cumulative.gg, gender.hazard.gg, ncol = 1, heights = c(0.6,0
 svg("Output/O2 - Survival Rates by Gender.svg", width = 9, height = 6)
 grid.arrange(gender.cumulative.gg, gender.hazard.gg, ncol = 1, heights = c(0.6,0.4))
 dev.off()
+
+# Save Out ----------------------------------------------------------------
+saveRDS(survival.year.dt, "Data/D8 - National Level Cohort Surival.rds")
+
 
 
