@@ -32,7 +32,8 @@ PH.map <- get_googlemap (
 
 # CityMuni Level Cohort ---------------------------------------------------
 
-schools.dt <- schools.dt %>% mutate(school.citymuni = paste(school.citymuni, school.province))
+schools.dt <- schools.dt %>%
+  mutate(school.citymuni = paste(school.citymuni, school.province))
 
 eligibleschools.dt <- enrolment.dt %>% group_by(school.id) %>% summarise(count = n()) %>%
   mutate(secondary = school.id > 300000) %>%
@@ -51,18 +52,19 @@ survival.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$schoo
          valid = as.numeric(grade) - lag(as.numeric(grade)) == 1) %>%
   ungroup() %>% filter(!is.na(dropout))
 
-survival_append.dt <- data.frame(school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
-                                 grade = rep("Grade 1", 6*length(unique(survival.dt$school.citymuni))),
-                                 year = rep(2013:2015,
-                                            each = 2*length(unique(survival.dt$school.citymuni))),
-                                 gender = rep(c("Female", "Male"),
-                                              3*length(unique(survival.dt$school.citymuni))),
-                                 mean.dropout = 0,
-                                 min.dropout = 0,
-                                 max.dropout = 0,
-                                 mean.survival = 1,
-                                 min.survival = 1,
-                                 max.survival = 1)
+survival_append.dt <- data.frame(
+  school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
+  grade = rep("Grade 1", 6*length(unique(survival.dt$school.citymuni))),
+  year = rep(2013:2015,
+             each = 2*length(unique(survival.dt$school.citymuni))),
+  gender = rep(c("Female", "Male"),
+               3*length(unique(survival.dt$school.citymuni))),
+  mean.dropout = 0,
+  min.dropout = 0,
+  max.dropout = 0,
+  mean.survival = 1,
+  min.survival = 1,
+  max.survival = 1)
 
 elem.survival.dt <- survival.dt %>%  filter(grade != "Grade 1" & as.numeric(grade) <= 7) %>%
   group_by(school.citymuni, grade, gender, year) %>%
@@ -74,28 +76,26 @@ elem.survival.dt <- survival.dt %>%  filter(grade != "Grade 1" & as.numeric(grad
   mutate(mean.cum.survival = cumprod(mean.survival),
          max.cum.survival = cumprod(max.survival),
          min.cum.survival = cumprod(min.survival)) %>% ungroup() %>%
-  left_join(schools.dt %>% group_by(school.citymuni) %>% summarise(map.lat = mean(map.lat, na.rm = T),
-                                                                   map.lon = mean(map.lon, na.rm = T)))
+  left_join(schools.dt %>% group_by(school.citymuni) %>%
+              summarise(map.lat = mean(map.lat, na.rm = T),
+                        map.lon = mean(map.lon, na.rm = T)))
 rm(survival_append.dt)
 rm(eligibleschools.dt)
 
-survival_append.dt <- data.frame(school.citymuni =
-                                   rep(unique(survival.dt$school.citymuni), 6),
-                                 grade =
-                                   rep("Year 1 / Grade 7",
-                                       6*length(unique(survival.dt$school.citymuni))),
-                                 year =
-                                   rep(2013:2015, each =
-                                         2*length(unique(survival.dt$school.citymuni))),
-                                 gender =
-                                   rep(c("Female", "Male"),
-                                       3*length(unique(survival.dt$school.citymuni))),
-                                 mean.dropout = 0,
-                                 min.dropout = 0,
-                                 max.dropout = 0,
-                                 mean.survival = 1,
-                                 min.survival = 1,
-                                 max.survival = 1)
+survival_append.dt <- data.frame(
+  school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
+  grade = rep("Year 1 / Grade 7",
+              6*length(unique(survival.dt$school.citymuni))),
+  year = rep(2013:2015, each =
+               2*length(unique(survival.dt$school.citymuni))),
+  gender = rep(c("Female", "Male"),
+               3*length(unique(survival.dt$school.citymuni))),
+  mean.dropout = 0,
+  min.dropout = 0,
+  max.dropout = 0,
+  mean.survival = 1,
+  min.survival = 1,
+  max.survival = 1)
 
 hs.survival.dt <- survival.dt %>%  filter(as.numeric(grade) > 8) %>%
   group_by(school.citymuni, grade, gender, year) %>%
@@ -107,8 +107,9 @@ hs.survival.dt <- survival.dt %>%  filter(as.numeric(grade) > 8) %>%
   mutate(mean.cum.survival = cumprod(mean.survival),
          max.cum.survival = cumprod(max.survival),
          min.cum.survival = cumprod(min.survival)) %>% ungroup() %>%
-  left_join(schools.dt %>% group_by(school.citymuni) %>% summarise(map.lat = mean(map.lat, na.rm = T),
-                                                                   map.lon = mean(map.lon, na.rm = T)))
+  left_join(schools.dt %>% group_by(school.citymuni) %>%
+              summarise(map.lat = mean(map.lat, na.rm = T),
+                        map.lon = mean(map.lon, na.rm = T)))
 rm(survival_append.dt)
 
 # Cleaning of Latitude and Longitude Data ---------------------------------
@@ -179,16 +180,21 @@ if (sum(is.na(hs.survival.dt$map.lat)) + sum(is.na(hs.survival.dt$map.lon)) == 0
 
 elementary.dt <- elem.survival.dt %>% filter(grade == "Grade 6") %>%
   mutate(mean.cum.survival = ifelse(mean.cum.survival >= 1, 1, mean.cum.survival),
-         level = "Elementary", cum.dropout = 1-mean.cum.survival) %>% group_by(year, gender) %>%
-  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>% ungroup()
+         level = "Elementary", cum.dropout = 1-mean.cum.survival) %>%
+  group_by(year, gender) %>%
+  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>%
+  ungroup()
 
 secondary.dt <- hs.survival.dt %>% filter(grade == "Year 4 / Grade 10") %>%
   mutate(mean.cum.survival = ifelse(mean.cum.survival >= 1, 1, mean.cum.survival),
-         level = "Secondary", cum.dropout = 1-mean.cum.survival) %>% group_by(year, gender) %>%
-  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>% ungroup()
+         level = "Secondary", cum.dropout = 1-mean.cum.survival) %>%
+  group_by(year, gender) %>%
+  mutate(poor.performance = cum.dropout >= quantile(cum.dropout, 0.75)) %>%
+  ungroup()
 
-elementary_survival.gg <- ggmap(PH.map, base_layer = ggplot(data = elementary.dt,
-                                  mapping = aes(x = map.lon, y = map.lat))) +
+elementary_survival.gg <- ggmap(PH.map, base_layer =
+                                  ggplot(data = elementary.dt,
+                                         mapping = aes(x = map.lon, y = map.lat))) +
   facet_grid(gender ~ year) +
   geom_point(aes(color = mean.cum.survival), size = 1, alpha = 0.75) +
   geom_density2d(data = secondary.dt[secondary.dt$poor.performance,], bins = 2, color = "red") +
@@ -207,8 +213,9 @@ elementary_survival.gg <- ggmap(PH.map, base_layer = ggplot(data = elementary.dt
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
-secondary_survival.gg <- ggmap(PH.map, base_layer = ggplot(data = secondary.dt,
-                                  mapping = aes(x = map.lon, y = map.lat))) +
+secondary_survival.gg <- ggmap(PH.map, base_layer =
+                                 ggplot(data = secondary.dt,
+                                        mapping = aes(x = map.lon, y = map.lat))) +
   facet_grid(gender ~ year) +
   geom_point(aes(color = mean.cum.survival), size = 1, alpha = 0.75) +
   geom_density2d(data = secondary.dt[secondary.dt$poor.performance,], bins = 2, color = "red") +
