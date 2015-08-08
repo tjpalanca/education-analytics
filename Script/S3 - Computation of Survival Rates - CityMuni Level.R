@@ -53,8 +53,10 @@ survival.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$schoo
 
 survival_append.dt <- data.frame(school.citymuni = rep(unique(survival.dt$school.citymuni), 6),
                                  grade = rep("Grade 1", 6*length(unique(survival.dt$school.citymuni))),
-                                 year = rep(2013:2015, each = 2*length(unique(survival.dt$school.citymuni))),
-                                 gender = rep(c("Female", "Male"),3*length(unique(survival.dt$school.citymuni))),
+                                 year = rep(2013:2015,
+                                            each = 2*length(unique(survival.dt$school.citymuni))),
+                                 gender = rep(c("Female", "Male"),
+                                              3*length(unique(survival.dt$school.citymuni))),
                                  mean.dropout = 0,
                                  min.dropout = 0,
                                  max.dropout = 0,
