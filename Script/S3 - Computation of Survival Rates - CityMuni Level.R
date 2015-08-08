@@ -213,6 +213,7 @@ elementary_survival.gg <- ggmap(PH.map, base_layer =
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
+
 secondary_survival.gg <- ggmap(PH.map, base_layer =
                                  ggplot(data = secondary.dt,
                                         mapping = aes(x = map.lon, y = map.lat))) +
