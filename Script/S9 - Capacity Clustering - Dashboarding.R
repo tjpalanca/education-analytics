@@ -12,6 +12,7 @@ library(extrafont)
 loadfonts()
 library(scales)
 library(stringr)
+library(grid)
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
@@ -99,6 +100,7 @@ survival_elem.dt <- enrolment.dt %>%
   mutate(dropout = enrollment/lag(enrollment) - 1) %>%
   filter(!is.na(dropout) & !is.infinite(dropout)) %>%
   left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
+  filter(!is.na(cluster)) %>%
   group_by(year, gender, grade, cluster) %>%
   summarise(
     mean.dropout = mean(dropout),
@@ -110,17 +112,15 @@ survival_elem.dt <- enrolment.dt %>%
     ci90.upper.dropout = mean.dropout + se.dropout * qnorm(0.90),
     ci90.lower.dropout = mean.dropout - se.dropout * qnorm(0.90),
     ci80.upper.dropout = mean.dropout + se.dropout * qnorm(0.80),
-    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80))
+    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80)) %>%
+  ungroup()
 survival_seco.dt <- enrolment.dt %>%
   filter(as.numeric(grade) %in% 8:11) %>%
   group_by(cohort, gender) %>% arrange(year) %>%
   mutate(dropout = enrollment/lag(enrollment) - 1) %>%
   filter(!is.na(dropout) & !is.infinite(dropout)) %>%
-<<<<<<< HEAD
   left_join(schools_seco.dt %>% select(school.id, cluster)) %>%
-=======
-  left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
->>>>>>> 234647c8eb9c3ddf3d1a8d08d4e6b2b1be0155ba
+  filter(!is.na(cluster)) %>%
   group_by(year, gender, grade, cluster) %>%
   summarise(
     mean.dropout = mean(dropout),
@@ -132,7 +132,64 @@ survival_seco.dt <- enrolment.dt %>%
     ci90.upper.dropout = mean.dropout + se.dropout * qnorm(0.90),
     ci90.lower.dropout = mean.dropout - se.dropout * qnorm(0.90),
     ci80.upper.dropout = mean.dropout + se.dropout * qnorm(0.80),
-    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80))
+    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80)) %>%
+  ungroup()
+
+# Generate initial rows for cumulative dropout rates
+survival_elem_append.dt <-
+  data.frame(grade = "Grade 1",
+             year = rep(2013:2015, each = 12),
+             gender = rep(c("Female", "Male"), 6*2*3),
+             cluster = rep(rep(1:6, each = 2),3),
+             mean.dropout = 0,
+             se.dropout = 0,
+             ci99.upper.dropout = 0,
+             ci99.lower.dropout = 0,
+             ci95.upper.dropout = 0,
+             ci95.lower.dropout = 0,
+             ci90.upper.dropout = 0,
+             ci90.lower.dropout = 0,
+             ci80.upper.dropout = 0,
+             ci80.lower.dropout = 0,
+             mean.survival = 1,
+             ci99.upper.survival = 1,
+             ci99.lower.survival = 1,
+             ci95.upper.survival = 1,
+             ci95.lower.survival = 1,
+             ci91.upper.survival = 1,
+             ci91.lower.survival = 1,
+             ci81.upper.survival = 1,
+             ci81.lower.survival = 1)
+survival_seco_append.dt <-
+  data.frame(grade = "Year 1 / Grade 7",
+             year = rep(2013:2015, each = 12),
+             gender = rep(c("Female", "Male"), 6*2*3),
+             cluster = rep(rep(1:6, each = 2),3),
+             mean.dropout = 0,
+             se.dropout = 0,
+             ci99.upper.dropout = 0,
+             ci99.lower.dropout = 0,
+             ci95.upper.dropout = 0,
+             ci95.lower.dropout = 0,
+             ci90.upper.dropout = 0,
+             ci90.lower.dropout = 0,
+             ci80.upper.dropout = 0,
+             ci80.lower.dropout = 0,
+             mean.survival = 1,
+             ci99.upper.survival = 1,
+             ci99.lower.survival = 1,
+             ci95.upper.survival = 1,
+             ci95.lower.survival = 1,
+             ci91.upper.survival = 1,
+             ci91.lower.survival = 1,
+             ci81.upper.survival = 1,
+             ci81.lower.survival = 1)
+
+# Combine and compute cumulative dropout rates
+survival_elementary.dt <- rbind(survival_elem_append.dt, survival_elem.dt) %>%
+  arrange(year, cluster, gender, grade) %>%
+  group_by(year, cluster, gender) %>%
+  mutate(cum.)
 
 # Metric Means Plot ----------------------------------------------------
 
@@ -227,7 +284,8 @@ PlotProvincialMap <- function (data, shp, cluster.num) {
               size = 3, family = "Open Sans",
               lineheight = 0.7) +
     scale_fill_gradient(limits = c(0,NA), labels = percent,
-                        low = "gray95", high = ggplot_colors(6)[cluster.num], na.value = "gray98",
+                        low = "gray95", high = ggplot_colors(6)[cluster.num],
+                        na.value = "gray98",
                         name = "% of Schools") +
     coord_map() +
     ggtitle("Geographic Distribution") +
@@ -237,10 +295,37 @@ PlotProvincialMap <- function (data, shp, cluster.num) {
           legend.position = "bottom")
 }
 
-PlotProvincialMap(schools_elem.dt, PHprov.shp, cluster.num = 4)
+# Distribution Chart ------------------------------------------------------
+
+PlotDistributionChart <- function (data) {
+  ggplot(data %>%
+           group_by(cluster.name, cluster) %>%
+           summarise(count = n()) %>%
+           ungroup() %>%
+           mutate(rel.count = round(count/sum(count)*100, 0),
+                  cum.rel.count = cumsum(rel.count),
+                  text.pos = cum.rel.count - rel.count/2,
+                  label = paste0(cluster.name, "\n", comma(count),
+                                 " (", rel.count,"%)")),
+         aes(x = 1, y = rel.count, color = cluster.name, fill = cluster.name)) +
+    geom_bar(stat = "identity") +
+    geom_text(aes(x = rep(c(1.2, 0.8), 3),
+                  y = text.pos, label = label),
+              color = "black",
+              family = "Open Sans") +
+    coord_flip(ylim = c(-10, 110)) +
+    map.thm +
+    theme(legend.position = "none")
+}
+
+PlotDistributionChart(schools_seco.dt)
+
 
 # Dashboard Construction --------------------------------------------------
 
+ClusterDashboard <- function(capacity.data, survival.data, shp, cluster.num) {
+
+}
 
 
 
