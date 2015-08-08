@@ -83,18 +83,53 @@ rm(PHprov.ref)
 rm(schools.dt)
 
 # Clean up enrollment file
-enrolment.dt <- enrolment.dt[,1:5]
 eligibleschools.dt <- enrolment.dt %>% group_by(school.id) %>% summarise(count = n()) %>%
   mutate(secondary = school.id > 300000) %>%
   mutate(complete = (secondary == F & count == 56) | (secondary == T & count == 32)) %>%
   filter(complete == T)
-enrolment.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$school.id, ]
+enrolment.dt <- enrolment.dt[enrolment.dt$school.id %in% eligibleschools.dt$school.id, 1:5]
 rm(eligibleschools.dt)
 
 # Compute dropout rates per school
-enrolment.dt$cohort <- enrolment.dt$school.id + enrolment.dt$year - as.numeric(enrolment.dt$grade)
+enrolment.dt <- enrolment.dt %>%
+  mutate(cohort = as.numeric(factor(paste(school.id, year - as.numeric(grade)))))
+survival_elem.dt <- enrolment.dt %>%
+  filter(as.numeric(grade) %in% 2:7) %>%
+  group_by(cohort, gender) %>% arrange(year) %>%
+  mutate(dropout = enrollment/lag(enrollment) - 1) %>%
+  filter(!is.na(dropout) & !is.infinite(dropout)) %>%
+  left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
+  group_by(year, gender, grade) %>%
+  summarise(
+    mean.dropout = mean(dropout),
+    se.dropout = sd(dropout)/sqrt(n()),
+    ci99.upper.dropout = mean.dropout + se.dropout * qnorm(0.99),
+    ci99.lower.dropout = mean.dropout - se.dropout * qnorm(0.99),
+    ci95.upper.dropout = mean.dropout + se.dropout * qnorm(0.95),
+    ci95.lower.dropout = mean.dropout - se.dropout * qnorm(0.95),
+    ci90.upper.dropout = mean.dropout + se.dropout * qnorm(0.90),
+    ci90.lower.dropout = mean.dropout - se.dropout * qnorm(0.90),
+    ci80.upper.dropout = mean.dropout + se.dropout * qnorm(0.80),
+    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80))
+survival_seco.dt <- enrolment.dt %>%
+  filter(as.numeric(grade) %in% 2:7) %>%
+  group_by(cohort, gender) %>% arrange(year) %>%
+  mutate(dropout = enrollment/lag(enrollment) - 1) %>%
+  filter(!is.na(dropout) & !is.infinite(dropout)) %>%
+  left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
+  group_by(year, gender, grade) %>%
+  summarise(
+    mean.dropout = mean(dropout),
+    se.dropout = sd(dropout)/sqrt(n()),
+    ci99.upper.dropout = mean.dropout + se.dropout * qnorm(0.99),
+    ci99.lower.dropout = mean.dropout - se.dropout * qnorm(0.99),
+    ci95.upper.dropout = mean.dropout + se.dropout * qnorm(0.95),
+    ci95.lower.dropout = mean.dropout - se.dropout * qnorm(0.95),
+    ci90.upper.dropout = mean.dropout + se.dropout * qnorm(0.90),
+    ci90.lower.dropout = mean.dropout - se.dropout * qnorm(0.90),
+    ci80.upper.dropout = mean.dropout + se.dropout * qnorm(0.80),
+    ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80))
 
-View(enrolment.dt %>% arrange(gender, year, grade))
 # Metric Means Plot ----------------------------------------------------
 
 PlotMetrics <- function (data, cluster.num) {
