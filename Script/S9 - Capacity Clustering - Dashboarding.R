@@ -99,7 +99,7 @@ survival_elem.dt <- enrolment.dt %>%
   mutate(dropout = enrollment/lag(enrollment) - 1) %>%
   filter(!is.na(dropout) & !is.infinite(dropout)) %>%
   left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
-  group_by(year, gender, grade) %>%
+  group_by(year, gender, grade, cluster) %>%
   summarise(
     mean.dropout = mean(dropout),
     se.dropout = sd(dropout)/sqrt(n()),
@@ -112,12 +112,12 @@ survival_elem.dt <- enrolment.dt %>%
     ci80.upper.dropout = mean.dropout + se.dropout * qnorm(0.80),
     ci80.lower.dropout = mean.dropout - se.dropout * qnorm(0.80))
 survival_seco.dt <- enrolment.dt %>%
-  filter(as.numeric(grade) %in% 2:7) %>%
+  filter(as.numeric(grade) %in% 8:11) %>%
   group_by(cohort, gender) %>% arrange(year) %>%
   mutate(dropout = enrollment/lag(enrollment) - 1) %>%
   filter(!is.na(dropout) & !is.infinite(dropout)) %>%
-  left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
-  group_by(year, gender, grade) %>%
+  left_join(schools_seco.dt %>% select(school.id, cluster)) %>%
+  group_by(year, gender, grade, cluster) %>%
   summarise(
     mean.dropout = mean(dropout),
     se.dropout = sd(dropout)/sqrt(n()),
