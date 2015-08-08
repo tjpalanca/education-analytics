@@ -116,7 +116,11 @@ survival_seco.dt <- enrolment.dt %>%
   group_by(cohort, gender) %>% arrange(year) %>%
   mutate(dropout = enrollment/lag(enrollment) - 1) %>%
   filter(!is.na(dropout) & !is.infinite(dropout)) %>%
+<<<<<<< HEAD
   left_join(schools_seco.dt %>% select(school.id, cluster)) %>%
+=======
+  left_join(schools_elem.dt %>% select(school.id, cluster)) %>%
+>>>>>>> 234647c8eb9c3ddf3d1a8d08d4e6b2b1be0155ba
   group_by(year, gender, grade, cluster) %>%
   summarise(
     mean.dropout = mean(dropout),
