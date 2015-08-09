@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S9 - Capacity Clustering - Development of Cluster Dashboards
 # July 19, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(maptools)

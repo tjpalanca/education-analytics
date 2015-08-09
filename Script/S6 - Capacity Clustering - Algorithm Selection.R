@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S6 - Capacity Clustering - Algorithm Selection
 # July 16, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(dplyr)

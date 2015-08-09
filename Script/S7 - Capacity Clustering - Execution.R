@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S7 - Capacity Clustering - Execution
 # July 19, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(dplyr)

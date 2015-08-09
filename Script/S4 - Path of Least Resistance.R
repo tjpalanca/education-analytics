@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S4 - Computation of Path of Least Resistance
 # July 7, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(ggplot2)

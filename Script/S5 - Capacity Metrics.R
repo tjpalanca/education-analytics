@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S5 - Capacity Metrics
 # July 10, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(dplyr)

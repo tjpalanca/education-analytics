@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S1 - Data Management
 # June 20, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(dplyr)

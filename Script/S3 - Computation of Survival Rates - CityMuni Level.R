@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S3 - Computation of Survival Rates per City and Municipality
 # July 7, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(ggplot2)

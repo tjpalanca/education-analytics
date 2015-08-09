@@ -1,6 +1,7 @@
 # Data Analytics for Education
 # S2 - Survival Rate
 # June 30, 2015
+# Author: Troy James R Palanca
 
 # Libraries ---------------------------------------------------------------
 library(ggplot2)
