@@ -14,6 +14,7 @@ library(scales)
 library(stringr)
 library(grid)
 library(rgeos)
+library(gridExtra)
 loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
@@ -45,6 +46,9 @@ ggplot_colors <- function (n) {
   colors = seq(15, 375, length = n+1)
   hcl(h = colors, l = 65, c = 100)[1:n]
 }
+
+# Original Order
+original.cluster.numbers <- as.numeric(schools_elem_profiles_formatted.dt$cluster.num)
 
 # Data Adjustments --------------------------------------------------------
 
@@ -303,7 +307,8 @@ survival_seco_national.dt <- enrolment.dt %>%
 # Clean up
 rm(survival_elem_append.dt,
    survival_seco_append.dt,
-   enrolment.dt)
+   enrolment.dt,
+   citymuni.dt)
 
 # Metric Means Plot ----------------------------------------------------
 PlotMetrics <- function (data, cluster.num) {
@@ -367,7 +372,7 @@ PlotMetrics <- function (data, cluster.num) {
 }
 
 # Survival Rate Plot ------------------------------------------------------
-PlotSurvivalRates <- function (schools.data, cluster.data, national.data, cluster.num) {
+PlotSurvivalRates <- function (cluster.data, national.data, cluster.num) {
   # Perform means transform
   cluster.data <- cluster.data %>%
     group_by(year, grade, cluster) %>%
@@ -381,9 +386,9 @@ PlotSurvivalRates <- function (schools.data, cluster.data, national.data, cluste
     geom_ribbon(aes(ymin = cum.ci99.lower.survival,
                     ymax = cum.ci99.upper.survival),
                 alpha = 0.2,
-                fill = ggplot_colors(6)[cluster.num]) +
+                fill = ggplot_colors(6)[which(original.cluster.numbers ==cluster.num)]) +
     geom_line(aes(y = cum.mean.survival),
-              color = ggplot_colors(6)[cluster.num]) +
+              color = ggplot_colors(6)[which(original.cluster.numbers ==cluster.num)]) +
     geom_line(data = national.data,
               aes(y = cum.mean.survival),
               color = "black",
@@ -393,7 +398,7 @@ PlotSurvivalRates <- function (schools.data, cluster.data, national.data, cluste
               aes(label = percent(cum.mean.survival),
                   y = cum.mean.survival),
               size = 4,
-              color = ggplot_colors(6)[cluster.num]) +
+              color = ggplot_colors(6)[which(original.cluster.numbers ==cluster.num)]) +
     geom_text(data = national.data %>% ungroup() %>%
                 filter(as.numeric(grade) == max(as.numeric(grade))),
               aes(label = percent(cum.mean.survival),
@@ -407,11 +412,10 @@ PlotSurvivalRates <- function (schools.data, cluster.data, national.data, cluste
     coord_cartesian(ylim = c(0,1)) +
     theme(axis.text.x = element_text(angle = 90),
           axis.title.x = element_blank(),
-          plot.title = element_text(face = "bold", size = 14, hjust = 0),
+          plot.title = element_text(face = "bold", size = 14, hjust = 0,
+                                    family = "Raleway"),
           axis.title.y = element_text(face = "bold", size = 12))
 }
-
-PlotSurvivalRates(schools_elem.dt, survival_elementary.dt, survival_elem_national.dt, 4)
 
 # Geographical Distribution Plot ----------------------------------------
 PlotProvincialMap <- function (data, shp, cluster.num) {
@@ -436,7 +440,8 @@ PlotProvincialMap <- function (data, shp, cluster.num) {
               size = 3, family = "Open Sans",
               lineheight = 0.7) +
     scale_fill_gradient(limits = c(0,NA), labels = percent,
-                        low = "gray95", high = ggplot_colors(6)[cluster.num],
+                        low = "gray95", high = ggplot_colors(6)[
+                          which(original.cluster.numbers ==cluster.num)],
                         na.value = "gray98",
                         name = "% of Schools") +
     coord_map() +
@@ -473,12 +478,85 @@ PlotDistributionChart <- function (data) {
 }
 
 # Dashboard Construction --------------------------------------------------
-ClusterDashboard <- function(capacity.data,
-                             survival.cluster.data,
-                             survival.national.data,
-                             shp, cluster.num) {
+ClusterPanel<- function(capacity.data,
+                        survival.cluster.data,
+                        survival.national.data,
+                        cluster.profile.data,
+                        shp, clust) {
 
+  # Create title grob
+  title.gg <- arrangeGrob(
+    textGrob(
+      label = cluster.profile.data$Cluster[cluster.profile.data$cluster.num == clust][1],
+      gp = gpar(fontfamily = "Raleway",
+                fontsize = 24,
+                fontface = "bold"),
+      just = "left",
+      x = 0.05, y = 0.5
+    ),
+    textGrob(
+      label = cluster.profile.data$Description[cluster.profile.data$cluster.num == clust][1],
+      gp = gpar(fontfamily = "Open Sans",
+                fontsize = 14),
+      just = "left",
+      x = 0.05, y = 0.5
+    )
+  )
+
+  # Define themes
+  footer.gp <- gpar(
+    fontfamily = "Open Sans",
+    lineheight = 0.8,
+    fontsize = 9
+  )
+
+  # Load up main plots
+  geographical_distribution.gg <- PlotProvincialMap(capacity.data, shp, clust)
+  metric_means.gg <- PlotMetrics(capacity.data, clust)
+  survival_rate.gg <- PlotSurvivalRates(survival.cluster.data, survival.national.data, clust)
+
+  # Define plot areas
+  title.grob <- arrangeGrob(title.gg)
+  left.grob <- arrangeGrob(geographical_distribution.gg)
+  right.grob <- arrangeGrob(
+    arrangeGrob(
+      metric_means.gg,
+      textGrob(
+        label = "Red line indicates system-wide average.
+Data is winsorized at the 1st and 99th percentile.",
+        gp = footer.gp,
+        just = "left", x = 0
+      ),
+      heights = c(0.9, 0.1)
+    ),
+    arrangeGrob(
+      survival_rate.gg,
+      textGrob(
+        label = "Dotted line indicates system-wide average.
+Solid line and shaded area indicate cluster-wide average with 99% confidence.",
+        gp = footer.gp,
+        just = "left", x = 0
+      ),
+      heights = c(0.9, 0.1)
+    )
+  )
+  plot.grob <- arrangeGrob(left.grob, right.grob, ncol = 2,
+                           widths = c(0.45,0.55))
+
+  # Return Plot
+  grid.arrange(title.grob, plot.grob, ncol = 1, heights = c(0.1,0.9))
 }
+
+png(bg = "gray98", filename = "Output/O16A - Cluster Panel Sample.png",
+    width = 1000, height = 800)
+ClusterPanel(capacity.data = schools_elem.dt,
+             survival.cluster.data = survival_elementary.dt,
+             survival.national.data = survival_elem_national.dt,
+             cluster.profile.data = schools_elem_profiles_formatted.dt,
+             shp = PHprov.shp,
+             clust = 1)
+dev.off()
+
 
 
 
