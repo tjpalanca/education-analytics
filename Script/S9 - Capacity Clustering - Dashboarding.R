@@ -15,6 +15,7 @@ library(stringr)
 library(grid)
 library(rgeos)
 library(gridExtra)
+library(png)
 loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
@@ -47,8 +48,9 @@ ggplot_colors <- function (n) {
   hcl(h = colors, l = 65, c = 100)[1:n]
 }
 
-# Original Order
-original.cluster.numbers <- as.numeric(schools_elem_profiles_formatted.dt$cluster.num)
+# Original Order of Clusters
+orig_clust_elem.ls <- as.numeric(schools_elem_profiles_formatted.dt$cluster.num)
+orig_clust_elem.ls <- as.numeric(schools_seco_profiles_formatted.dt$cluster.num)
 
 # Data Adjustments --------------------------------------------------------
 
@@ -372,7 +374,8 @@ PlotMetrics <- function (data, cluster.num) {
 }
 
 # Survival Rate Plot ------------------------------------------------------
-PlotSurvivalRates <- function (cluster.data, national.data, cluster.num) {
+PlotSurvivalRates <- function (cluster.data, national.data, cluster.num,
+                               original.cluster.numbers) {
   # Perform means transform
   cluster.data <- cluster.data %>%
     group_by(year, grade, cluster) %>%
@@ -418,7 +421,8 @@ PlotSurvivalRates <- function (cluster.data, national.data, cluster.num) {
 }
 
 # Geographical Distribution Plot ----------------------------------------
-PlotProvincialMap <- function (data, shp, cluster.num) {
+PlotProvincialMap <- function (data, shp, cluster.num,
+                               original.cluster.numbers) {
   data_byprovince.dt <- data %>%
     group_by(school.province.shp) %>%
     mutate(total.schools = n()) %>%
@@ -477,11 +481,12 @@ PlotDistributionChart <- function (data) {
     theme(legend.position = "none")
 }
 
-# Dashboard Construction --------------------------------------------------
+# Cluster Panel Construction --------------------------------------------------
 ClusterPanel<- function(capacity.data,
                         survival.cluster.data,
                         survival.national.data,
                         cluster.profile.data,
+                        original.cluster.numbers,
                         shp, clust) {
 
   # Create title grob
@@ -511,9 +516,11 @@ ClusterPanel<- function(capacity.data,
   )
 
   # Load up main plots
-  geographical_distribution.gg <- PlotProvincialMap(capacity.data, shp, clust)
+  geographical_distribution.gg <- PlotProvincialMap(capacity.data, shp, clust,
+                                                    original.cluster.numbers)
   metric_means.gg <- PlotMetrics(capacity.data, clust)
-  survival_rate.gg <- PlotSurvivalRates(survival.cluster.data, survival.national.data, clust)
+  survival_rate.gg <- PlotSurvivalRates(survival.cluster.data, survival.national.data, clust,
+                                        original.cluster.numbers)
 
   # Define plot areas
   title.grob <- arrangeGrob(title.gg)
@@ -544,18 +551,92 @@ Solid line and shaded area indicate cluster-wide average with 99% confidence.",
                            widths = c(0.45,0.55))
 
   # Return Plot
-  grid.arrange(title.grob, plot.grob, ncol = 1, heights = c(0.1,0.9))
+  arrangeGrob(title.grob, plot.grob, ncol = 1, heights = c(0.1,0.9))
 }
 
-png(bg = "gray98", filename = "Output/O16A - Cluster Panel Sample.png",
-    width = 1000, height = 800)
-ClusterPanel(capacity.data = schools_elem.dt,
-             survival.cluster.data = survival_elementary.dt,
-             survival.national.data = survival_elem_national.dt,
-             cluster.profile.data = schools_elem_profiles_formatted.dt,
-             shp = PHprov.shp,
-             clust = 1)
-dev.off()
+
+
+# Final Dashboard Construction --------------------------------------------
+
+# png(bg = "gray98", filename = "Output/O16A - Cluster Panel Sample.png",
+#     width = 1000, height = 800)
+
+PlotDashboard <- function(capacity.data,
+                          survival.cluster.data,
+                          survival.national.data,
+                          cluster.profile.data,
+                          shp,
+                          original.cluster.numbers) {
+
+  # Generate Panels
+  panels.ls <- lapply(
+    original.cluster.numbers,
+    ClusterPanel,
+    capacity.data = capacity.data,
+    survival.cluster.data = survival.cluster.data,
+    survival.national.data = survival.national.data,
+    cluster.profile.data = cluster.profile.data,
+    original.cluster.numbers = original.cluster.numbers,
+    shp = shp
+  )
+
+  # Generate title grob with distribution chart
+  title.grob <-
+    arrangeGrob(
+      arrangeGrob(
+        textGrob(
+          label = "Elementary Schools Capacity Clusters",
+          gp = gpar(
+            fontfamily = "Raleway",
+            fontsize = 30,
+            fontface = "bold"
+          )
+        ),
+        rasterGrob(readPNG("Data/JDT Watermark.png")),
+        ncol = 2,
+        widths = c(0.6, 0.4)
+      ),
+      Plot
+    )
+
+  plots.grob <-
+    arrangeGrob(
+      arrangeGrob(
+        panels.ls[[1]],
+        panels.ls[[2]],
+        ncol = 2
+      ),
+      arrangeGrob(
+        panels.ls[[3]],
+        panels.ls[[4]],
+        ncol = 2
+      ),
+      arrangeGrob(
+        panels.ls[[5]],
+        panels.ls[[6]],
+        ncol = 2
+      ),
+      ncol = 1
+    )
+
+  footer.grob <-
+    textGrob(x = 0,
+             label = paste(collapse = "\n",
+                           "Troy James R Palanca | www.jumbodumbothoughts.com",
+                           "Data Sources: Department of Education, PhilGIS.org",
+                           "Disclaimer: Content is provided for information purposes only."))
+
+}
+
+
+
+
+
+grid.arrange(
+  title.grob
+)
+
+# dev.off()
 
 
 
