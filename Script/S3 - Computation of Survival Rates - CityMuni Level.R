@@ -14,6 +14,7 @@ library(gridExtra)
 library(ggmap)
 library(stringdist)
 loadfonts(quiet = T)
+library(png)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")

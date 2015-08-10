@@ -13,6 +13,7 @@ library(scales)
 library(stringr)
 library(gridExtra)
 library(stringdist)
+library(png)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
