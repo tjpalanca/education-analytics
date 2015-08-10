@@ -8,12 +8,12 @@ library(ggplot2)
 library(dplyr)
 library(reshape2)
 library(extrafont)
-loadfonts()
 library(scales)
 library(stringr)
 library(gridExtra)
 library(ggmap)
 library(stringdist)
+loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
@@ -236,7 +236,75 @@ secondary_survival.gg <- ggmap(PH.map, base_layer =
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
-svg("Output/O3 - Survival Map.svg", bg = "gray98", width = 14, height = 9)
-grid.arrange(elementary_survival.gg, secondary_survival.gg, ncol = 2)
-dev.off()
+survivalmaps.grob <- arrangeGrob(elementary_survival.gg, secondary_survival.gg, ncol = 2)
 
+survivaltitle.grob <-
+  arrangeGrob(
+    arrangeGrob(
+      textGrob(
+        label = paste("Educational Gaps"),
+        gp = gpar(
+          fontfamily = "Raleway",
+          fontsize = 24,
+          fontface = "bold"
+        ),
+        just = "left",
+        x = unit(0.03, "npc"),
+        y = unit(0.35, "npc")
+      ),
+      textGrob(
+        label = paste("Cumulative completion rates per city/municipality, 2013-2015"),
+        gp = gpar(
+          fontfamily = "Open Sans",
+          fontsize = 12,
+          fontface = "italic"
+        ),
+        just = "left",
+        x = unit(0.03, "npc"),
+        y = unit(0.75, "npc")
+      ),
+      ncol = 1,
+      heights = c(0.6, 0.4)
+    ),
+    rasterGrob(readPNG("Data/JDT Watermark.png")),
+    ncol = 2,
+    widths = c(0.6, 0.4)
+  )
+
+survivalnotes.grob <-
+  textGrob(x = unit(0.03, "npc"), just = "left",
+           label = paste(c(
+             "Explanatory notes:",
+             "1. Survival rates were computed from the empirical proportion of students that move from the previous grade level, to the current grade level. Therefore,\n     the survival rates cannot be interpreted as  the survival experience of a specific cohort.",
+             "2. Migration (moving from one school to another) cannot be tracked and excluded from the dropout computation."),
+             collapse = "\n"),
+           gp = gpar(fontfamily = "Open Sans",
+                     fontsize = 8,
+                     lineheight = 0.8))
+
+survivalfooter.gg <-
+  textGrob(x = unit(0.03, "npc"), just = "left",
+           label = paste(c(
+             "Troy James R Palanca | www.jumbodumbothoughts.com",
+             "Data Source: Department of Education",
+             "Disclaimer: Content is provided for information purposes only."),
+             collapse = "\n"),
+           gp = gpar(fontfamily = "Open Sans",
+                     fontsize = 7,
+                     lineheight = 0.8))
+
+png("Output/O3 - Survival Map.png",
+    width = 14*300, height = 12*300,
+    bg = "gray98",
+    res = 350)
+print(
+  arrangeGrob(
+    survivaltitle.grob,
+    survivalmaps.grob,
+    survivalnotes.grob,
+    survivalfooter.gg,
+    heights = c(0.1, 0.8, 0.05, 0.05),
+    ncol = 1
+  )
+)
+dev.off()
