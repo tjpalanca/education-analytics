@@ -16,7 +16,7 @@ library(grid)
 library(rgeos)
 library(gridExtra)
 library(png)
-loadfonts(quiet = T)
+loadfonts()
 
 # Data --------------------------------------------------------------------
 load("Data/D7 - Cluster Profiles.RData")
@@ -25,7 +25,7 @@ load("Data/D1 - Enrollment Data.RData")
 
 # Shapefiles are from PhilGIS.org
 PH.shp <- readShapeSpatial("Data/PH Shapefile/Country",
-                                   proj4string = CRS("+proj=longlat +datum=WGS84"))
+                           proj4string = CRS("+proj=longlat +datum=WGS84"))
 PHprov.shp <- (readShapeSpatial("Data/PH Provinces Shapefile/Provinces",
                                 proj4string =
                                   CRS("+proj=longlat +datum=WGS84"),
@@ -50,7 +50,7 @@ ggplot_colors <- function (n) {
 
 # Original Order of Clusters
 orig_clust_elem.ls <- as.numeric(schools_elem_profiles_formatted.dt$cluster.num)
-orig_clust_elem.ls <- as.numeric(schools_seco_profiles_formatted.dt$cluster.num)
+orig_clust_seco.ls <- as.numeric(schools_seco_profiles_formatted.dt$cluster.num)
 
 # Data Adjustments --------------------------------------------------------
 
@@ -389,9 +389,9 @@ PlotSurvivalRates <- function (cluster.data, national.data, cluster.num,
     geom_ribbon(aes(ymin = cum.ci99.lower.survival,
                     ymax = cum.ci99.upper.survival),
                 alpha = 0.2,
-                fill = ggplot_colors(6)[which(original.cluster.numbers ==cluster.num)]) +
+                fill = ggplot_colors(6)[which(original.cluster.numbers == cluster.num)]) +
     geom_line(aes(y = cum.mean.survival),
-              color = ggplot_colors(6)[which(original.cluster.numbers ==cluster.num)]) +
+              color = ggplot_colors(6)[which(original.cluster.numbers == cluster.num)]) +
     geom_line(data = national.data,
               aes(y = cum.mean.survival),
               color = "black",
@@ -472,10 +472,11 @@ PlotDistributionChart <- function (data) {
                                  " (", rel.count,"%)")),
          aes(x = 1, y = rel.count, color = cluster.name, fill = cluster.name)) +
     geom_bar(stat = "identity") +
-    geom_text(aes(x = rep(c(1.2, 0.8), 3),
+    geom_text(aes(x = 1,
                   y = text.pos, label = label),
               color = "black",
-              family = "Open Sans") +
+              family = "Open Sans",
+              size = 5) +
     coord_flip(ylim = c(-10, 110)) +
     map.thm +
     theme(legend.position = "none")
@@ -500,12 +501,16 @@ ClusterPanel<- function(capacity.data,
       x = 0.05, y = 0.5
     ),
     textGrob(
-      label = cluster.profile.data$Description[cluster.profile.data$cluster.num == clust][1],
+      label = str_wrap(str_replace_all(
+        cluster.profile.data$Description[cluster.profile.data$cluster.num == clust][1],
+        "\n", " "), 75),
       gp = gpar(fontfamily = "Open Sans",
-                fontsize = 14),
+                fontsize = 14,
+                lineheight = 0.8),
       just = "left",
       x = 0.05, y = 0.5
-    )
+    ),
+    heights = c(0.6, 0.4)
   )
 
   # Define themes
@@ -551,22 +556,21 @@ Solid line and shaded area indicate cluster-wide average with 99% confidence.",
                            widths = c(0.45,0.55))
 
   # Return Plot
-  arrangeGrob(title.grob, plot.grob, ncol = 1, heights = c(0.1,0.9))
+  arrangeGrob(title.grob,
+              plot.grob,
+              ncol = 1,
+              heights = c(0.15,0.85))
 }
 
-
-
 # Final Dashboard Construction --------------------------------------------
-
-# png(bg = "gray98", filename = "Output/O16A - Cluster Panel Sample.png",
-#     width = 1000, height = 800)
 
 PlotDashboard <- function(capacity.data,
                           survival.cluster.data,
                           survival.national.data,
                           cluster.profile.data,
                           shp,
-                          original.cluster.numbers) {
+                          original.cluster.numbers,
+                          title = "Title") {
 
   # Generate Panels
   panels.ls <- lapply(
@@ -585,18 +589,22 @@ PlotDashboard <- function(capacity.data,
     arrangeGrob(
       arrangeGrob(
         textGrob(
-          label = "Elementary Schools Capacity Clusters",
+          label = paste("   ", title),
           gp = gpar(
             fontfamily = "Raleway",
-            fontsize = 30,
+            fontsize = 40,
             fontface = "bold"
-          )
+          ),
+          just = "left",
+          x = 0
         ),
         rasterGrob(readPNG("Data/JDT Watermark.png")),
         ncol = 2,
         widths = c(0.6, 0.4)
       ),
-      Plot
+      PlotDistributionChart(data = capacity.data),
+      heights = c(0.6, 0.4),
+      ncol = 1
     )
 
   plots.grob <-
@@ -620,24 +628,56 @@ PlotDashboard <- function(capacity.data,
     )
 
   footer.grob <-
-    textGrob(x = 0,
-             label = paste(collapse = "\n",
-                           "Troy James R Palanca | www.jumbodumbothoughts.com",
-                           "Data Sources: Department of Education, PhilGIS.org",
-                           "Disclaimer: Content is provided for information purposes only."))
+    textGrob(x = 0, just = "left",
+             label = paste(c(
+               "         Troy James R Palanca | www.jumbodumbothoughts.com",
+               "         Data Sources: Department of Education, PhilGIS.org",
+               "         Disclaimer: Content is provided for information purposes only."),
+               collapse = "\n"),
+             gp = gpar(fontfamily = "Open Sans",
+                       fontsize = 14))
 
+  return(
+    arrangeGrob(
+      title.grob,
+      plots.grob,
+      footer.grob,
+      ncol = 1,
+      heights = c(0.1,0.85,0.05)
+    )
+  )
 }
 
 
+# Output to PNG file (Elementary Schools)
 
-
-
-grid.arrange(
-  title.grob
+png(bg = "gray98", file = "Output/O17A - Elementary Schools Capacity Dashboard.png",
+    width = 6000, height = 8000, res = 300)
+print(
+  PlotDashboard(
+    capacity.data = schools_elem.dt,
+    survival.cluster.data = survival_elementary.dt,
+    survival.national.data = survival_elem_national.dt,
+    cluster.profile.data = schools_elem_profiles_formatted.dt,
+    shp = PHprov.shp,
+    original.cluster.numbers = orig_clust_elem.ls,
+    title = "Elementary Schools Capacity Clusters")
 )
+dev.off()
 
-# dev.off()
+# Output to PNG file (Secondary Schools)
 
-
-
+png(bg = "gray98", file = "Output/O17B - Secondary Schools Capacity Dashboard.png",
+    width = 6000, height = 8000, res = 300)
+print(
+  PlotDashboard(
+    capacity.data = schools_seco.dt,
+    survival.cluster.data = survival_secondary.dt,
+    survival.national.data = survival_seco_national.dt,
+    cluster.profile.data = schools_seco_profiles_formatted.dt,
+    shp = PHprov.shp,
+    original.cluster.numbers = orig_clust_seco.ls,
+    title = "Secondary Schools Capacity Clusters")
+)
+dev.off()
 
