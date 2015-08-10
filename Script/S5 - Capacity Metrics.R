@@ -11,12 +11,13 @@ library(grid)
 library(gridExtra)
 library(extrafont)
 library(rgl)
+library(png)
 loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
 load("Data/D4 - Schools Data Expanded.RData")
 load("Data/D1 - Enrollment Data.RData")
-imconvertstring<-"\"C:\\Program Files\\ImageMagick-6.9.1-Q16\\convert.exe\" -delay 1x%d %s*.png %s.%s"
+imconvertstring <-"\"C:\\Program Files\\ImageMagick-6.9.1-Q16\\convert.exe\" -delay 1x%d %s*.png %s.%s"
 
 # Metric Construction ------------------------------------------------------
 
@@ -153,78 +154,140 @@ boxplot.tm <- theme_minimal() +
         plot.title = element_text(size = 12, face = "bold"),
         plot.background = element_rect(color = NA, fill = "gray98"))
 
-svg("Output/O5 - Capacity Metrics.svg", width = 10, height = 6, bg = "gray98")
-grid.arrange(
-  ggplot(schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
-                               `Students per \nRegular\nTeacher` = regular.teacher.ratio,
-                               school.classification) %>%
-           melt(variable.name = "metric", value.name = "value"),
-         aes(x = metric, y = value + min(value[value != min(value)]))) +
-    geom_boxplot(alpha = 0.5, aes(fill = school.classification,
-                                  color = school.classification)) +
-    geom_text(data = schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
-                                           `Students per \nRegular\nTeacher` = regular.teacher.ratio,
-                                           school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>%
-                group_by(metric, school.classification) %>%
-                summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(1/value, digits = 3), y = value,
-                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
-              family = "Open Sans", size = 4, vjust = 0.1) +
-    scale_y_log10(labels = reciprocal, breaks = 1/c(2,10,15,25,50,75,100,250,1000)) +
-    scale_color_manual(name = "School Classification",
-                       values = c("darkgreen", "darkblue")) +
-    scale_fill_manual(name = "School Classification",
-                      values = c("darkgreen", "darkblue")) +
-    ggtitle("Teacher\nCapacity\n") + boxplot.tm,
-  ggplot(schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
-                               `Students per\nStandard\nRoom` = standard.room.ratio,
-                               `Students per\nRoom\n(Full Capacity)` = full.room.ratio,
-                               school.classification) %>%
-           melt(variable.name = "metric", value.name = "value"),
-         aes(x = metric, y = value + min(value[value != min(value)]))) +
-    geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
-    geom_text(data = schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
-                                           `Students per\nStandard\nRoom` = standard.room.ratio,
-                                           `Students per\nRoom\n(Full Capacity)` = full.room.ratio,
-                                           school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>%
-                group_by(metric, school.classification) %>%
-                summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(1/value, digits = 3), y = value,
-                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
-              family = "Open Sans", size = 4, vjust = 0.1) +
-    scale_y_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
-    scale_color_manual(name = "School Classification",
-                       values = c("darkgreen", "darkblue")) +
-    scale_fill_manual(name = "School Classification",
-                      values = c("darkgreen", "darkblue")) +
-    ggtitle("Room\nCapacity\n") + boxplot.tm,
-  ggplot(schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
-                               school.classification) %>%
-           melt(variable.name = "metric", value.name = "value"),
-         aes(x = metric, y = value + min(value[value != min(value)]))) +
-    geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
-    geom_text(data = schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
-                                           school.classification) %>%
-                melt(variable.name = "metric", value.name = "value") %>%
-                group_by(metric, school.classification) %>%
-                summarise_each(funs(median)) %>% ungroup(),
-              aes(label = format(value, digits = 3), y = value + 200,
-                  x = as.numeric(as.factor(metric))+0.4*as.numeric(as.factor(school.classification))-0.6),
-              family = "Open Sans", size = 4) +
-    scale_y_log10(breaks = c(100, 500, 1000, 3000, 7000, 10000)) +
-    scale_color_manual(name = "School Classification",
-                       values = c("darkgreen", "darkblue")) +
-    scale_fill_manual(name = "School Classification",
-                      values = c("darkgreen", "darkblue")) +
-    ggtitle("Budgetary\nCapacity\n") +
-    boxplot.tm + theme(legend.position = "right"),
-  ncol = 3, main = textGrob("\nCapacity Metrics", gp = gpar(fontfamily = "Raleway",
-                                                            fontface = "bold",
-                                                            fontsize = 18,
-                                                            fill = "gray98")),
-  widths = c(0.275 - 0.025/2, 0.375 - 0.025/2, 0.375))
+metricplots.gg <-
+  arrangeGrob(
+    ggplot(schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
+                                 `Students per \nRegular\nTeacher` = regular.teacher.ratio,
+                                 school.classification) %>%
+             melt(variable.name = "metric", value.name = "value"),
+           aes(x = metric, y = value + min(value[value != min(value)]))) +
+      geom_boxplot(alpha = 0.5, aes(fill = school.classification,
+                                    color = school.classification)) +
+      geom_text(data = schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
+                                             `Students per \nRegular\nTeacher` = regular.teacher.ratio,
+                                             school.classification) %>%
+                  melt(variable.name = "metric", value.name = "value") %>%
+                  group_by(metric, school.classification) %>%
+                  summarise_each(funs(median)) %>% ungroup(),
+                aes(label = format(1/value, digits = 3), y = value,
+                    x = as.numeric(as.factor(metric))+0.4*
+                      as.numeric(as.factor(school.classification))-0.6),
+                family = "Open Sans", size = 4, vjust = 0.1) +
+      scale_y_log10(labels = reciprocal, breaks = 1/c(2,10,15,25,50,75,100,250,1000)) +
+      scale_color_manual(name = "School Classification",
+                         values = c("darkgreen", "darkblue")) +
+      scale_fill_manual(name = "School Classification",
+                        values = c("darkgreen", "darkblue")) +
+      ggtitle("Teacher\nCapacity\n") + boxplot.tm,
+    ggplot(schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
+                                 `Students per\nStandard\nRoom` = standard.room.ratio,
+                                 `Students per\nRoom\n(Full Capacity)` = full.room.ratio,
+                                 school.classification) %>%
+             melt(variable.name = "metric", value.name = "value"),
+           aes(x = metric, y = value + min(value[value != min(value)]))) +
+      geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
+      geom_text(data = schools.dt %>% select(`Students per\nAcademic\nRoom` = academic.room.ratio,
+                                             `Students per\nStandard\nRoom` = standard.room.ratio,
+                                             `Students per\nRoom\n(Full Capacity)` = full.room.ratio,
+                                             school.classification) %>%
+                  melt(variable.name = "metric", value.name = "value") %>%
+                  group_by(metric, school.classification) %>%
+                  summarise_each(funs(median)) %>% ungroup(),
+                aes(label = format(1/value, digits = 3), y = value,
+                    x = as.numeric(as.factor(metric))+0.4*
+                      as.numeric(as.factor(school.classification))-0.6),
+                family = "Open Sans", size = 4, vjust = 0.1) +
+      scale_y_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
+      scale_color_manual(name = "School Classification",
+                         values = c("darkgreen", "darkblue")) +
+      scale_fill_manual(name = "School Classification",
+                        values = c("darkgreen", "darkblue")) +
+      ggtitle("Room\nCapacity\n") + boxplot.tm,
+    ggplot(schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
+                                 school.classification) %>%
+             melt(variable.name = "metric", value.name = "value"),
+           aes(x = metric, y = value + min(value[value != min(value)]))) +
+      geom_boxplot(alpha = 0.5, aes(color = school.classification, fill = school.classification)) +
+      geom_text(data = schools.dt %>% select(`MOOE per\nStudent` = mooe.ratio,
+                                             school.classification) %>%
+                  melt(variable.name = "metric", value.name = "value") %>%
+                  group_by(metric, school.classification) %>%
+                  summarise_each(funs(median)) %>% ungroup(),
+                aes(label = format(value, digits = 3), y = value + 200,
+                    x = as.numeric(as.factor(metric))+0.4*
+                      as.numeric(as.factor(school.classification))-0.6),
+                family = "Open Sans", size = 4) +
+      scale_y_log10(breaks = c(100, 500, 1000, 3000, 7000, 10000)) +
+      scale_color_manual(name = "School Classification",
+                         values = c("darkgreen", "darkblue")) +
+      scale_fill_manual(name = "School Classification",
+                        values = c("darkgreen", "darkblue")) +
+      ggtitle("Budgetary\nCapacity\n") +
+      boxplot.tm + theme(legend.position = "right"),
+    ncol = 3, main = textGrob("\nCapacity Metrics",
+                              gp = gpar(fontfamily = "Raleway",
+                                        fontface = "bold",
+                                        fontsize = 18,
+                                        fill = "gray98")),
+    widths = c(0.275 - 0.025/2, 0.375 - 0.025/2, 0.375))
+
+metrictitle.grob <-
+  arrangeGrob(
+    arrangeGrob(
+      textGrob(
+        label = paste("Capacities and Constraints"),
+        gp = gpar(
+          fontfamily = "Raleway",
+          fontsize = 16,
+          fontface = "bold"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.35, "npc")
+      ),
+      textGrob(
+        label = paste("Capacity metrics for the Philippine educational system, 2013-2015"),
+        gp = gpar(
+          fontfamily = "Open Sans",
+          fontsize = 10,
+          fontface = "italic"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.75, "npc")
+      ),
+      ncol = 1,
+      heights = c(0.6, 0.4)
+    ),
+    rasterGrob(readPNG("Data/JDT Watermark.png")),
+    ncol = 2,
+    widths = c(0.6, 0.4)
+  )
+
+metricfooter.gg <-
+  textGrob(x = unit(0.03, "npc"), just = "left",
+           label = paste(c(
+             "Troy James R Palanca | www.jumbodumbothoughts.com",
+             "Data Source: Department of Education",
+             "Disclaimer: Content is provided for information purposes only."),
+             collapse = "\n"),
+           gp = gpar(fontfamily = "Open Sans",
+                     fontsize = 7,
+                     lineheight = 0.8))
+
+png("Output/O5 - Capacity Metrics.png",
+    width = 10*300, height = 6*300,
+    bg = "gray98",
+    res = 350)
+print(
+  arrangeGrob(
+    metrictitle.grob,
+    metricplots.gg,
+    metricfooter.gg,
+    heights = c(0.1, 0.85, 0.05),
+    ncol = 1
+  )
+)
 dev.off()
 
 rm(boxplot.tm, histtheme.tm)
