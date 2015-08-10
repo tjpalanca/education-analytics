@@ -224,11 +224,7 @@ metricplots.gg <-
                         values = c("darkgreen", "darkblue")) +
       ggtitle("Budgetary\nCapacity\n") +
       boxplot.tm + theme(legend.position = "right"),
-    ncol = 3, main = textGrob("\nCapacity Metrics",
-                              gp = gpar(fontfamily = "Raleway",
-                                        fontface = "bold",
-                                        fontsize = 18,
-                                        fill = "gray98")),
+    ncol = 3,
     widths = c(0.275 - 0.025/2, 0.375 - 0.025/2, 0.375))
 
 metrictitle.grob <-
@@ -242,7 +238,7 @@ metrictitle.grob <-
           fontface = "bold"
         ),
         just = "left",
-        x = unit(0.1, "npc"),
+        x = unit(0.05, "npc"),
         y = unit(0.35, "npc")
       ),
       textGrob(
@@ -253,7 +249,7 @@ metrictitle.grob <-
           fontface = "italic"
         ),
         just = "left",
-        x = unit(0.1, "npc"),
+        x = unit(0.05, "npc"),
         y = unit(0.75, "npc")
       ),
       ncol = 1,
@@ -276,7 +272,7 @@ metricfooter.gg <-
                      lineheight = 0.8))
 
 png("Output/O5 - Capacity Metrics.png",
-    width = 10*300, height = 6*300,
+    width = 12*300, height = 6*300,
     bg = "gray98",
     res = 350)
 print(
@@ -284,7 +280,7 @@ print(
     metrictitle.grob,
     metricplots.gg,
     metricfooter.gg,
-    heights = c(0.1, 0.85, 0.05),
+    heights = c(0.15, 0.8, 0.05),
     ncol = 1
   )
 )
