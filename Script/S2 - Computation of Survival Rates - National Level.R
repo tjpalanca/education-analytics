@@ -77,7 +77,6 @@ time.cumulative.gg <-
   scale_y_continuous(name = "Cumulative Survival Rate (% of Cohort)", labels = percent,
                      limits = c(0,1)) +
   scale_x_discrete(name = "Grade Level") +
-  ggtitle("And Then There Were None\n") +
   theme_bw() +
   theme(text = element_text(family = "Open Sans"),
         legend.position = "none",
@@ -113,8 +112,54 @@ time.hazard.gg <-
         plot.background = element_rect(fill = "gray98", color = NA),
         plot.title = element_text(face = "bold", family = "Raleway", size = 18, hjust = -0.1))
 
-svg("Output/O1 - Survival Rates by Year.svg", width = 7, height = 7)
-grid.arrange(time.cumulative.gg, time.hazard.gg, ncol = 1, heights = c(0.6,0.4))
+timeplots.gg <- arrangeGrob(
+  time.cumulative.gg,
+  time.hazard.gg,
+  ncol = 1, heights = c(0.6,0.4)
+)
+
+timetitle.grob <-
+  arrangeGrob(
+    arrangeGrob(
+      textGrob(
+        label = paste("War of Attrition"),
+        gp = gpar(
+          fontfamily = "Raleway",
+          fontsize = 24,
+          fontface = "bold"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.35, "npc")
+      ),
+      textGrob(
+        label = paste("Cumulative survival rates over time, 2013-2015"),
+        gp = gpar(
+          fontfamily = "Open Sans",
+          fontsize = 12,
+          fontface = "italic"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.75, "npc")
+      ),
+      ncol = 1,
+      heights = c(0.6, 0.4)
+    ),
+    rasterGrob(readPNG("Data/JDT Watermark.png")),
+    ncol = 2,
+    widths = c(0.6, 0.4)
+  )
+
+png("Output/O1 - Survival Rates by Year.png", width = 7*300, height = 7*300, bg = "gray98",
+    res = 250)
+print(
+  arrangeGrob(
+    timetitle.grob,
+    timeplots.gg,
+    heights = c(0.10,0.9)
+  )
+)
 dev.off()
 
 # Plot: Survival Rates per Gender -----------------------------------------
@@ -128,7 +173,6 @@ gender.cumulative.gg <-
             aes(label = str_sub(gender,1,1)), vjust = 1, family = "Open Sans", size = 6) +
   scale_y_continuous(name = "Cumulative Survival Rate (% of Cohort)", labels = percent,
                      limits = c(0,1)) +
-  ggtitle("BATTLE OF THE SEXES\n") +
   theme_bw() +
   theme(text = element_text(family = "Open Sans"),
         legend.position = "none",
@@ -160,10 +204,56 @@ gender.hazard.gg <-
         plot.background = element_rect(fill = "gray98", color = NA),
         plot.title = element_text(face = "bold", family = "Raleway", size = 18, hjust = -0.1))
 
-grid.arrange(gender.cumulative.gg, gender.hazard.gg, ncol = 1, heights = c(0.6,0.4))
+genderplots.gg <-
+  arrangeGrob(gender.cumulative.gg,
+              gender.hazard.gg,
+              ncol = 1,
+              heights = c(0.6,0.4))
 
-svg("Output/O2 - Survival Rates by Gender.svg", width = 9, height = 6)
-grid.arrange(gender.cumulative.gg, gender.hazard.gg, ncol = 1, heights = c(0.6,0.4))
+gendertitle.grob <-
+  arrangeGrob(
+    arrangeGrob(
+      textGrob(
+        label = paste("Battle of the Sexes"),
+        gp = gpar(
+          fontfamily = "Raleway",
+          fontsize = 24,
+          fontface = "bold"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.35, "npc")
+      ),
+      textGrob(
+        label = paste("Cumulative survival rates by gender, 2013-2015"),
+        gp = gpar(
+          fontfamily = "Open Sans",
+          fontsize = 12,
+          fontface = "italic"
+        ),
+        just = "left",
+        x = unit(0.1, "npc"),
+        y = unit(0.75, "npc")
+      ),
+      ncol = 1,
+      heights = c(0.6, 0.4)
+    ),
+    rasterGrob(readPNG("Data/JDT Watermark.png")),
+    ncol = 2,
+    widths = c(0.6, 0.4)
+  )
+
+png("Output/O2 - Survival Rates by Gender.png",
+    width = 9*300, height = 6*300,
+    bg = "gray98",
+    res = 250)
+print(
+  arrangeGrob(
+    gendertitle.grob,
+    genderplots.gg,
+    heights = c(0.1,0.9)
+  )
+)
 dev.off()
 
 # Save Out ----------------------------------------------------------------
