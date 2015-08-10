@@ -15,6 +15,7 @@ library(gridExtra)
 library(ggmap)
 library(stringdist)
 library(geosphere)
+library(png)
 
 # Data --------------------------------------------------------------------
 load("Data/D1 - Enrollment Data.RData")
@@ -67,7 +68,7 @@ rm(distances.vc, i)
 elementary.dt <- schools.dt %>% filter(school.classification == "Elementary")
 
 for (i in 1:nrow(citymuni.dt)){
-  distances.vc <- distGeo(
+  distances.vc <- distMeeus(
     as.matrix(data.frame(map.lon = rep(citymuni.dt$map.lon[i], nrow(elementary.dt)),
                map.lat = rep(citymuni.dt$map.lat[i], nrow(elementary.dt)))),
     as.matrix(elementary.dt[c("map.lon", "map.lat")]))
@@ -85,7 +86,7 @@ for (i in 1:nrow(citymuni.dt)){
 secondary.dt <- schools.dt %>% filter(school.classification == "Secondary")
 
 for (i in 1:nrow(citymuni.dt)){
-  distances.vc <- distGeo(
+  distances.vc <- distMeeus(
     as.matrix(data.frame(map.lon = rep(citymuni.dt$map.lon[i], nrow(secondary.dt)),
                          map.lat = rep(citymuni.dt$map.lat[i], nrow(secondary.dt)))),
     as.matrix(secondary.dt[c("map.lon", "map.lat")]))
@@ -162,8 +163,80 @@ seco.path.gg <- ggmap(PH.map, base_layer = ggplot(paths.seco.dt, aes(x = lon, y 
         legend.background = element_blank(),
         strip.text = element_text(size = 14))
 
-svg(filename = "Output/O4 - Paths Plot.svg", bg = "grey98", width = 10, height = 8)
-grid.arrange(elem.path.gg, seco.path.gg, ncol = 2)
+pathsplots.grob <-
+  arrangeGrob(elem.path.gg,
+            seco.path.gg,
+            ncol = 2)
+
+pathstitle.grob <-
+  arrangeGrob(
+    arrangeGrob(
+      textGrob(
+        label = paste("Coverage Capers"),
+        gp = gpar(
+          fontfamily = "Raleway",
+          fontsize = 24,
+          fontface = "bold"
+        ),
+        just = "left",
+        x = unit(0.03, "npc"),
+        y = unit(0.35, "npc")
+      ),
+      textGrob(
+        label = paste("\"Paths of Least Resistance\" in the Philippine School System, 2014"),
+        gp = gpar(
+          fontfamily = "Open Sans",
+          fontsize = 12,
+          fontface = "italic"
+        ),
+        just = "left",
+        x = unit(0.03, "npc"),
+        y = unit(0.75, "npc")
+      ),
+      ncol = 1,
+      heights = c(0.6, 0.4)
+    ),
+    rasterGrob(readPNG("Data/JDT Watermark.png")),
+    ncol = 2,
+    widths = c(0.6, 0.4)
+  )
+
+pathsnotes.grob <-
+  textGrob(x = unit(0.03, "npc"), just = "left",
+           label = paste(c(
+             "Explanatory notes:",
+             "1. Paths were computed as the shortest distance between the center of the city or municipality and the nearest school via \"as the crow flies\" distance.",
+             "2. Most lines are not visible because the distances are trivial."),
+             collapse = "\n"),
+           gp = gpar(fontfamily = "Open Sans",
+                     fontsize = 8,
+                     lineheight = 0.8))
+
+pathsfooter.gg <-
+  textGrob(x = unit(0.03, "npc"), just = "left",
+           label = paste(c(
+             "Troy James R Palanca | www.jumbodumbothoughts.com",
+             "Data Source: Department of Education",
+             "Disclaimer: Content is provided for information purposes only."),
+             collapse = "\n"),
+           gp = gpar(fontfamily = "Open Sans",
+                     fontsize = 7,
+                     lineheight = 0.8))
+
+png("Output/O4 - Paths Plot.png",
+    width = 10*300, height = 8*300,
+    bg = "gray98",
+    res = 300)
+print(
+  arrangeGrob(
+    pathstitle.grob,
+    pathsplots.grob,
+    pathsnotes.grob,
+    pathsfooter.gg,
+    heights = c(0.1, 0.8, 0.05, 0.05),
+    ncol = 1
+  )
+)
 dev.off()
 
 # Plot of Distances -------------------------------------------------------
@@ -186,4 +259,4 @@ ggplot(paths.dt %>% filter(citymuniprov != "Kalayaan Palawan" &
         axis.title = element_text(face = "bold"))
 
 # Aborted analysis.
-# REASON: Small errors in the geocodes (geocodes being placed in the geographic center rather than the population center) cause similarly small errors in the distance to schools the variance of which is too large to produce meaningful comparisons.
+# REASON: Small errors in the geocodes (geocodes being placed in the geographic center rather than the population center) cause similarly small errors in the distance to schools the variance of which are too large to produce meaningful comparisons at a granular level.
