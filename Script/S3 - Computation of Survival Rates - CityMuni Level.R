@@ -277,7 +277,8 @@ survivalnotes.grob <-
            label = paste(c(
              "Explanatory notes:",
              "1. Survival rates were computed from the empirical proportion of students that move from the previous grade level, to the current grade level. Therefore,\n     the survival rates cannot be interpreted as  the survival experience of a specific cohort.",
-             "2. Migration (moving from one school to another) cannot be tracked and excluded from the dropout computation."),
+             "2. Migration (moving from one school to another) cannot be tracked and excluded from the dropout computation.",
+             "3. Red lines indicate a kernel density estimate for schools whose dropout rates belong to the highest 25%."),
              collapse = "\n"),
            gp = gpar(fontfamily = "Open Sans",
                      fontsize = 8,
