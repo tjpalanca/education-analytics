@@ -1,10 +1,9 @@
 # Data Analytics for Education
-# S10 - Reallocation Strategies
+# S10 - Capacity Utilization Strategy
 # August 10, 2015
 # Author: Troy James R Palanca
 
-# This script explores possible reallocation strategies to improve capacity within the current
-# resource constraints.
+# This script explores the effect of using nonstandard and vacant rooms.
 
 # Libraries ---------------------------------------------------------------
 library(dplyr)
@@ -12,11 +11,11 @@ library(ggplot2)
 library(reshape2)
 library(stringr)
 library(extrafont)
-loadfonts(quiet = T)
 library(stringdist)
 library(ggmap)
 library(gridExtra)
 library(png)
+loadfonts(quiet = T)
 
 # Data --------------------------------------------------------------------
 load("Data/D5 - Capacity Data.RData")
@@ -290,4 +289,3 @@ dev.off()
 rm(footer.grob, notes.grob, plots.grob, title.grob,
    rooms_nonstandard.gg, rooms_vacant.gg, rooms_waterfall.gg,
    schools_nonstandard.dt, schools_roomuse_waterfall.dt, schools_vacant.dt, schools_roomuse.dt)
-
