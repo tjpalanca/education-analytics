@@ -1,0 +1,18 @@
+---
+title: "Department of Education Analytics"
+subtitle: "A data-driven dive into the Philippine education system"
+author: "Troy James R Palanca | Jumbo Dumbo Thoughts"
+date: "August 12, 2015"
+output: pdf_document
+classoption: a4paper
+toc: yes
+---
+
+```{r child = '01_Executive_Summary.Rmd'}
+```
+
+```{r child = '02_Data_Management.Rmd'}
+```
+
+```{r child = '03_Survival_Analysis.Rmd'}
+```

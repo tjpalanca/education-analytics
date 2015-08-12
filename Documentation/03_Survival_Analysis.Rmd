@@ -1,0 +1,64 @@
+---
+classoption: a4paper
+output: pdf_document
+---
+
+```{r echo = FALSE}
+# Set default options
+library(knitr)
+opts_knit$set(root.dir = '..')
+opts_chunk$set(cache = TRUE)
+opts_chunk$set(echo = FALSE)
+opts_chunk$set(message = FALSE)
+opts_chunk$set(warning = FALSE)
+library(png)
+library(gridExtra)
+```
+
+# Survival Analysis
+
+We perform a survival analysis to determine the retention performance of the Philippine education system. Analysis of survival rates allow us to determine the relative performance across genders, schools, years, and grade levels.
+
+## National-level cohort
+
+We first perform a survival analysis of the nationwide cohort. 
+
+### Survival rates over time
+
+```{r fig.height = 7, fig.width = 7}
+grid.raster(readPNG("Output/O1 - Survival Rates by Year.png"))
+```
+
+Cumulative survival rates have been increasing over time, indicating an improvement in overall retention rates for the public school system. On the bottom panel, we can see that the improvement can be attributed to reduction in the dropout rate for Grade 2 students. The transition rate to secondary school does not seem to have improved over time.
+
+This analysis, however, comes with a few caveats:
+
+* Since we only have raw enrollment numbers for the public school system, we cannot determine whether drops in the cohort size are due to dropout, transfer to private school, or international migration.  Despite this, domestic migration will not affect the dropout numbers, since we sum all enrollment figures nationwide.
+* In computing cumulative survival rates, we compute the inverse of the shrinkage in cohort size for each grade level for that year, and then compute the cumulative product of the survival rates. What this means is that the survival curve cannot be interpreted as the experience of a single cohort, but all cohorts present during that particular year. I think this is reasonable because school system performance is affected not by the particular cohorts in play, but the policies, procedures, and circumstances in place during that year.
+
+### Survival rates by gender
+
+What are the differences between male and female survival rates? We flip the faceting to determine the answer to that question.  
+
+```{r fig.width = 7}
+grid.raster(readPNG("Output/O2 - Survival Rates by Gender.png"))
+```
+
+This chart yields two key observations about the gender differences in survival rates:
+
+* Females are better at staying in school, but are given less chances to do so, especially during the transition from elementary to high school.
+* Overall, females are still more likely to stay in school than males. Demographics, family needs, and will come into play.
+
+## City/Municipality Level Cohort
+
+Next, we want to analyze the differences across cities and municipalities in terms of survival rates.
+
+### Survival maps
+
+We first plot the cities and municipalites coded with the cumulative survival rate to determine whether there are any "dropout hotspots." We also add a density line that isolates concentrations of schools whose dropout rates belong to the worst 25%.
+
+```{r fig.width = 14, fig.height = 12, fig.align="center"}
+grid.raster(readPNG("Output/O3 - Survival Map.png"))
+```
+
+A constant hotspot of high dropout rates in the ARMM region, especially in Maguindanao. Recently, however, especially for males and for elementary schools, Eastern Visayas has also experienced drastic dropout rates. This may be the result of Supertyphoon Yolanda, a strong storm that rampaged across the region in November 2013.

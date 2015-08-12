@@ -1,0 +1,17 @@
+---
+output: pdf_document
+classoption: a4paper
+---
+
+```{r echo = FALSE}
+library(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+# Executive Summary
+
+## Context
+
+## Key Findings
+
+## Recommendations

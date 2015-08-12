@@ -1,0 +1,34 @@
+---
+output: pdf_document
+classoption: a4paper
+---
+
+```{r echo = FALSE}
+library(knitr)
+opts_knit$set(root.dir = '..')
+```
+
+# Data Management
+
+## Data sources
+
+Data was sourced from public sources, mostly from the [Department of Education's open data portal][1]. The complete list of data inputs is as follows:
+
+```{r, echo = FALSE, message = FALSE}
+library(readxl)
+library(pander) 
+panderOptions('table.split.table', Inf)
+set.caption('Data descriptions and sources')
+pander(read_excel("Documentation/Data Descriptions.xlsx"))
+```
+
+[1]: http://www.deped.gov.ph/datasets
+
+## Data processing
+
+Before analysis, we process the various datasets as follows:
+
+* Grade levels in the enrollment data were harmonized across the years (e.g. Grade 7 and Year 1 are combined, and so on).
+* Locations were integrated into the masterlist of schools, when available.
+* Teachers, rooms, and budget data were integrated into the masterlist of schools, when available.
+* Data were saved into RData images for easy access.
