@@ -322,7 +322,5 @@ file.rename("Output/O6_-_Secondary_Capacity_Plot.gif",
 rm(schools_elem.dt, schools_seco.dt)
 rm(reciprocal)
 
-# Note: There seem to be no discernible clusters in the capacity metrics. For this example, we shall just focus on the outliers. We shall also attempt hierarchical clustering.
-
 # Save Out ----------------------------------------------------------------
 save.image("Data/D5 - Capacity Data.RData")
