@@ -1,0 +1,32 @@
+---
+classoption: a4paper
+output: pdf_document
+---
+
+```{r echo = FALSE, warning=FALSE, message=FALSE}
+# Set default options
+library(knitr)
+opts_knit$set(root.dir = '..')
+opts_chunk$set(cache = TRUE)
+opts_chunk$set(echo = FALSE)
+opts_chunk$set(message = FALSE)
+opts_chunk$set(warning = FALSE)
+library(png)
+library(gridExtra)
+```
+
+# Capacity Analysis
+
+We perform an analysis of school capacity[^1]] along three dimensions:
+
+* teacher capacity, as defined by the student-to-teacher ratio[^2],
+* room capacity, as defined by the student-to-room ratio[^3], and 
+* budgetary capacity, as defined by the amoung of maintenance and other operating expense (MOOE) budget per student[^4].
+
+[^1]: We remove schools with zero of any of these capacity metrics,because we assume that schools cannot exist without teachers, rooms, or a budget (4,896 or 10.5%). Likewise, those without any capacity figures are ignored (4 or <0.01%) and are presented as blanks in geographic representations.
+[^2]: Computed for 2014, due to data availability. For this initial section, we take all kinds of teacher (mobile, SPED, regular, and instructor).
+[^3]: Computed for 2013, due to data availability. For this initial section, we assume full utilization of nonstandard and unused rooms.
+[^4]: Computed for 2015, due to data availability. We assume full possible disbursement of these amounts.
+
+
+
