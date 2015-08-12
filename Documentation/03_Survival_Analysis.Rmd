@@ -3,7 +3,7 @@ classoption: a4paper
 output: pdf_document
 ---
 
-```{r echo = FALSE}
+```{r echo = FALSE, warning=FALSE, message=FALSE}
 # Set default options
 library(knitr)
 opts_knit$set(root.dir = '..')
@@ -62,3 +62,15 @@ grid.raster(readPNG("Output/O3 - Survival Map.png"))
 ```
 
 A constant hotspot of high dropout rates in the ARMM region, especially in Maguindanao. Recently, however, especially for males and for elementary schools, Eastern Visayas has also experienced drastic dropout rates. This may be the result of Supertyphoon Yolanda, a strong storm that rampaged across the region in November 2013.
+
+# Path of Least Resistance
+
+We will assess the coverage of the Philippine educational system by computing, for each city or municipality, a "path of least resistance," which is defined as the shortest distance that one would have to travel from his/her city or municipality to the nearest elementary or secondary school.
+
+```{r fig.width = 7, fig.align="center"}
+grid.raster(readPNG("Output/O4 - Paths Plot.png"))
+```
+
+Except for Kalayaan (part of the disputed Spratly Islands territories), all cities/municipalities seem to be covered by schools[^1]. This seems to suggest that beefing up existing schools should be the priority over building new schools. However, this does not mean that connectivity (easy access) is not a concern. Lack of bridges or other transport infrastructure may hamper access to schools.
+
+[^1]: We have attempted to assess the cities or municipalities that are furthest from schools, but small errors from the geocoding process prevent precise calculations from being made.
