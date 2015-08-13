@@ -75,6 +75,7 @@ histtheme.tm <-
 
 reciprocal <- function(x) 1/x
 
+png("Output/O19A - Capacity Metrics (Unlogged).png", width = 600, height = 400)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
@@ -102,6 +103,7 @@ grid.arrange(
     histtheme.tm,
   ncol = 3, main = textGrob("\nCapacity Metrics\n",
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
+dev.off()
 
 # Many positive outliers, logarithmic transformation will unskew the distributions
 # (except MOOE per student which is still positively skewed).
@@ -110,6 +112,7 @@ grid.arrange(
 
 # Log Transformed Charts --------------------------------------------------
 
+png("Output/O19B - Capacity Metrics (Logged).png", width = 600, height = 400)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
@@ -143,6 +146,7 @@ grid.arrange(
     histtheme.tm,
   ncol = 3, main = textGrob("\nCapacity Metrics\n",
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
+dev.off()
 
 # Summary of Capacity Metrics ---------------------------------------------
 
@@ -163,8 +167,10 @@ metricplots.gg <-
            aes(x = metric, y = value + min(value[value != min(value)]))) +
       geom_boxplot(alpha = 0.5, aes(fill = school.classification,
                                     color = school.classification)) +
-      geom_text(data = schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` = all.teacher.ratio,
-                                             `Students per \nRegular\nTeacher` = regular.teacher.ratio,
+      geom_text(data = schools.dt %>% select(`Students per \nTeacher\n(Full Capacity)` =
+                                               all.teacher.ratio,
+                                             `Students per \nRegular\nTeacher` =
+                                               regular.teacher.ratio,
                                              school.classification) %>%
                   melt(variable.name = "metric", value.name = "value") %>%
                   group_by(metric, school.classification) %>%
