@@ -16,3 +16,6 @@ toc: yes
 
 ```{r child = '03_Survival_Analysis.Rmd'}
 ```
+
+```{r child = '04_Capacity_Analysis.Rmd'}
+```
