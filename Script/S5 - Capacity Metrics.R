@@ -144,7 +144,7 @@ grid.arrange(
     geom_rug() + xlab("Student to Room Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
     histtheme.tm,
-  ncol = 3, main = textGrob("\nCapacity Metrics\n",
+  ncol = 3, main = textGrob("\nCapacity Metrics (Log 10)\n",
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
 dev.off()
 
