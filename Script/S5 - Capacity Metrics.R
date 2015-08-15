@@ -71,11 +71,12 @@ histtheme.tm <-
   theme_minimal() +
   theme(text = element_text(family = "Open Sans"),
         axis.title.y = element_blank(),
-        axis.title.x = element_text(face = "bold"))
+        axis.title.x = element_text(face = "bold"),
+        axis.text.x = element_text(size = 6))
 
 reciprocal <- function(x) 1/x
 
-png("Output/O19A - Capacity Metrics (Unlogged).png", width = 600, height = 400)
+png("Output/O19A - Capacity Metrics (Unlogged).png", width = 1200, height = 800, res = 150)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
@@ -112,7 +113,7 @@ dev.off()
 
 # Log Transformed Charts --------------------------------------------------
 
-png("Output/O19B - Capacity Metrics (Logged).png", width = 600, height = 400)
+png("Output/O19B - Capacity Metrics (Logged).png", width = 1200, height = 800, res = 150)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
