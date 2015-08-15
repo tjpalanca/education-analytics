@@ -23,22 +23,41 @@ We perform an analysis of school capacity[^1] along three dimensions:
 * room capacity, as defined by the student-to-room ratio[^3], and 
 * budgetary capacity, as defined by the amoung of maintenance and other operating expense (MOOE) budget per student[^4].
 
-[^1]: We remove schools with zero of any of these capacity metrics,because we assume that schools cannot exist without teachers, rooms, or a budget (4,896 or 10.5%). Likewise, those without any capacity figures are ignored (4 or <0.01%) and are presented as blanks in geographic representations.
-[^2]: Computed for 2014, due to data availability. For this initial section, we take all kinds of teacher (mobile, SPED, regular, and instructor).
-[^3]: Computed for 2013, due to data availability. For this initial section, we assume full utilization of nonstandard and unused rooms.
-[^4]: Computed for 2015, due to data availability. We assume full possible disbursement of these amounts.
+[^1]: We remove schools with zero teachers, schools, or rooms (4,896 or 10.5%). Schools whose capacity figures are unavailable are likewise ignored (4 or <0.01%).
+[^2]: Computed for 2014 only, due to data availability. For this initial section, we take all kinds of teacher (mobile, SPED, regular, and instructor).
+[^3]: Computed for 2013 only, due to data availability. For this initial section, we assume full utilization of nonstandard and unused rooms.
+[^4]: Computed for 2015 only, due to data availability. We assume full disbursement of these amounts.
 
 ## Exploratory data analysis
 
 We first determine centrality and dispersion by visually inspecting histograms of the computed capacity metrics. Take note the following definitions:
 
-```{r}
+```{r fig.height = 4}
 grid.raster(readPNG("Output/O19A - Capacity Metrics (Unlogged).png"))
 ```
 
+The metrics in their raw form are skewed to the right, i.e. there are some extreme positive outlier schools in the dataset. Skewed distributions are difficult to inspect and may adversely impact the result of further statistical methods, such as cluster analysis. We remedy the variables by taking the base 10 logarithms of each of the variables - transforming the scale from additive to multiplicative.
 
-
-```{r}
+```{r fig.height = 4}
 grid.raster(readPNG("Output/O19B - Capacity Metrics (Logged).png"))
 ```
 
+The logged capacity metrics are more symmetrical, with the exception of the MOOE Ratio. 
+
+From the histograms, we can already observe large disparities in school capacity. Student-to-teacher ratios can range from under 10 students per teacher to up to 100 students per teacher. Student-to-room ratios are similarly dispersed. While most schools budget lower than P1,000 per student, some schools can have up to P10,000 per student.
+
+We can further explore the average values and relative dispersion of capacity metrics through boxplots.
+
+```{r fig.height = 3.5}
+grid.raster(readPNG("Output/O5 - Capacity Metrics.png"))
+```
+
+The average student-to-teacher ratio hovers at around 37:1 for elementary and 32:1 for secondary. Compared to the OECD standard of 18:1, teacher capacity still pales in comparison, especially when smaller class sizes are linked better academic performance[^5].
+
+Room capacity is similar for elementary schools, at an average of 39 students per room. However, high school rooms are more packed, with an average of 48 students per rooom. Whereas teacher capacity is relatively better for high schools, room capacity is drastically worse. Still, one could argue that high school students may not require smaller class sizes as study habits may have already been inculcated.
+
+On average
+
+It should be noted that introducing an additional shift in the class schedule effectively doubles teacher and room capacity. However, having different shifts for students, especially those in the early stages of education, may not be ideal. Strategies to explore using the current capacity more efficiently are explored in later sections.
+
+[^5]: Although the question of whether smaller class sizes are better for students overall is still debated, the argument for larger class sizes generally emphasizes the impact on social skills, not academic performance.
