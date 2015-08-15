@@ -15,7 +15,7 @@ For details on the license and permission requests, please see the [license file
 
 ### Author Information
 
-**Troy James R Palanca**
+**Troy James R Palanca**  
 tjpalanca@outlook.com  
 [Jumbo Dumbo Thoughts](http://www.jumbodumbothoughts.com)  
 [Facebook Page](http://www.facebook.com/jumbodumbothoughts)  
