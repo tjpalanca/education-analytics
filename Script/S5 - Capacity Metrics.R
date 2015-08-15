@@ -79,11 +79,11 @@ png("Output/O19A - Capacity Metrics (Unlogged).png", width = 600, height = 400)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
-    geom_rug() + xlab("Teacher to Student Ratio") +
+    geom_rug() + xlab("Student to Teacher Ratio") +
     histtheme.tm,
   ggplot(schools.dt, aes(x = regular.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
-    geom_rug() + xlab("Regular Teachers to Student Ratio") +
+    geom_rug() + xlab("Student to Regular Teacher Ratio") +
     histtheme.tm,
   ggplot(schools.dt, aes(x = mooe.ratio)) +
     geom_histogram(color = NA, fill = "darkblue") +
@@ -91,15 +91,15 @@ grid.arrange(
     histtheme.tm,
   ggplot(schools.dt, aes(x = academic.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("Academic Room to Student Ratio") +
+    geom_rug() + xlab("Student to Academic Room Ratio") +
     histtheme.tm,
   ggplot(schools.dt, aes(x = standard.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("Standard Room to Student Ratio") +
+    geom_rug() + xlab("Student to Standard Room Ratio") +
     histtheme.tm,
   ggplot(schools.dt, aes(x = full.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("All Rooms to Student Ratio") +
+    geom_rug() + xlab("Student to Room Ratio") +
     histtheme.tm,
   ncol = 3, main = textGrob("\nCapacity Metrics\n",
                             gp = gpar(fontfamily = "Raleway", fontface = "bold")))
@@ -116,12 +116,12 @@ png("Output/O19B - Capacity Metrics (Logged).png", width = 600, height = 400)
 grid.arrange(
   ggplot(schools.dt, aes(x = all.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
-    geom_rug() + xlab("Teacher to Student Ratio") +
+    geom_rug() + xlab("Student to Teacher Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,1000)) +
     histtheme.tm,
   ggplot(schools.dt, aes(x = regular.teacher.ratio)) +
     geom_histogram(color = NA, fill = "darkgreen") +
-    geom_rug() + xlab("Regular Teachers to Student Ratio") +
+    geom_rug() + xlab("Student to Regular Teacher Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,1000)) +
     histtheme.tm,
   ggplot(schools.dt, aes(x = mooe.ratio)) +
@@ -131,17 +131,17 @@ grid.arrange(
     histtheme.tm,
   ggplot(schools.dt, aes(x = academic.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("Academic Room to Student Ratio") +
+    geom_rug() + xlab("Student to Academic Room Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
     histtheme.tm,
   ggplot(schools.dt, aes(x = standard.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("Standard Room to Student Ratio") +
+    geom_rug() + xlab("Student to Standard Room Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
     histtheme.tm,
   ggplot(schools.dt, aes(x = full.room.ratio)) +
     geom_histogram(color = NA, fill = "darkorange") +
-    geom_rug() + xlab("All Rooms to Student Ratio") +
+    geom_rug() + xlab("Student to Room Ratio") +
     scale_x_log10(labels = reciprocal, breaks = 1/c(1,10,15,25,50,75,100,250,500)) +
     histtheme.tm,
   ncol = 3, main = textGrob("\nCapacity Metrics\n",

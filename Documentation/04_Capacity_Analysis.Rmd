@@ -6,18 +6,18 @@ output: pdf_document
 ```{r echo = FALSE, warning=FALSE, message=FALSE}
 # Set default options
 library(knitr)
+library(png)
+library(gridExtra)
 opts_knit$set(root.dir = '..')
 opts_chunk$set(cache = TRUE)
 opts_chunk$set(echo = FALSE)
 opts_chunk$set(message = FALSE)
 opts_chunk$set(warning = FALSE)
-library(png)
-library(gridExtra)
 ```
 
 # Capacity Analysis
 
-We perform an analysis of school capacity[^1]] along three dimensions:
+We perform an analysis of school capacity[^1] along three dimensions:
 
 * teacher capacity, as defined by the student-to-teacher ratio[^2],
 * room capacity, as defined by the student-to-room ratio[^3], and 
@@ -28,5 +28,17 @@ We perform an analysis of school capacity[^1]] along three dimensions:
 [^3]: Computed for 2013, due to data availability. For this initial section, we assume full utilization of nonstandard and unused rooms.
 [^4]: Computed for 2015, due to data availability. We assume full possible disbursement of these amounts.
 
+## Exploratory data analysis
 
+We first determine centrality and dispersion by visually inspecting histograms of the computed capacity metrics. Take note the following definitions:
+
+```{r}
+grid.raster(readPNG("Output/O19A - Capacity Metrics (Unlogged).png"))
+```
+
+
+
+```{r}
+grid.raster(readPNG("Output/O19B - Capacity Metrics (Logged).png"))
+```
 
