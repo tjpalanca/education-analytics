@@ -8,6 +8,7 @@ output: pdf_document
 library(knitr)
 library(png)
 library(gridExtra)
+library(caTools)
 opts_knit$set(root.dir = '..')
 opts_chunk$set(cache = TRUE)
 opts_chunk$set(echo = FALSE)
@@ -56,8 +57,21 @@ The average student-to-teacher ratio hovers at around 37:1 for elementary and 32
 
 Room capacity is similar for elementary schools, at an average of 39 students per room. However, high school rooms are more packed, with an average of 48 students per rooom. Whereas teacher capacity is relatively better for high schools, room capacity is drastically worse. Still, one could argue that high school students may not require smaller class sizes as study habits may have already been inculcated.
 
-On average
+On average, elementary schools budget P639 per student, while secondary schools budget P1,103 per student. No direct comparisons can be made since differences in curricula and teaching talent required may be substantially different between elementary and secondary schools.
 
-It should be noted that introducing an additional shift in the class schedule effectively doubles teacher and room capacity. However, having different shifts for students, especially those in the early stages of education, may not be ideal. Strategies to explore using the current capacity more efficiently are explored in later sections.
+It should be noted that introducing an additional shift in the class schedule effectively doubles teacher and room capacity. However, having different shifts, especially for students in the early stages of education, may not be ideal. Strategies to explore using the current capacity more efficiently are explored in later sections.
 
 [^5]: Although the question of whether smaller class sizes are better for students overall is still debated, the argument for larger class sizes generally emphasizes the impact on social skills, not academic performance.
+
+## Capacity clustering
+
+Cluster analysis, or clustering, is a statistical method of grouping objects with others of similar characteristics. In this case, we use cluster analysis to group schools along with others of similar capacity metrics. We can then determine a capacity building strategy for each specific cluster.
+
+We first determine the feasibility of clustering by examining the shape of the input space.
+
+```{r fig.height = 2.5,fig.cap="Shape of elementary and secondary schools input spaces"}
+grid.arrange(rasterGrob(readPNG("Output/O6A - Elementary Capacity Plot.png")),
+             rasterGrob(readPNG("Output/O6B - Secondary Capacity Plot.png")),
+             ncol = 2)
+```
+
