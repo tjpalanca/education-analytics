@@ -302,10 +302,12 @@ schools_seco.dt <- schools.dt %>% filter(school.classification == "Secondary")
 
 par3d(windowRect  = c(100, 100, 600, 600), family = "Open Sans", cex = 0.8)
 plot3d(x = log10(schools_elem.dt$all.teacher.ratio),
-         y = log10(schools_elem.dt$full.room.ratio),
-         z = log10(schools_elem.dt$mooe.ratio),
-         size = 1, col = "darkgreen", box = F,
-       xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+                y = log10(schools_elem.dt$full.room.ratio),
+                z = log10(schools_elem.dt$mooe.ratio),
+                size = 1, col = "darkgreen", box = F,
+                xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+view3d(75, 15)
+snapshot3d("Output/O6A - Elementary Capacity Plot.png", fmt = "png")
 movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
         dir = paste(getwd(),"/Output", sep = ""),
         movie = "O6_-_Elementary_Capacity_Plot")
@@ -319,6 +321,8 @@ plot3d(x = log10(schools_seco.dt$all.teacher.ratio),
        z = log10(schools_seco.dt$mooe.ratio),
        size = 1, col = "darkblue", box = F,
        xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+view3d(75, 15)
+snapshot3d("Output/O6B - Secondary Capacity Plot.png", fmt = "png")
 movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
         dir = paste(getwd(),"/Output", sep = ""),
         movie = "O6_-_Secondary_Capacity_Plot")
