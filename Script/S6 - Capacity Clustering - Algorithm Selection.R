@@ -61,6 +61,8 @@ plot3d(x = log10(schools_elem.dt$all.teacher.ratio),
        col = schools_elem.dt$h.cluster,
        size = 1, box = F,
        xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
+view3d(75, 15)
+snapshot3d("Output/O20A - Capacity Clusters (Hierarchical).png", fmt = "png")
 movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
         dir = paste(getwd(),"/Output", sep = ""),
         movie = "clusterplot")
@@ -101,6 +103,8 @@ plot3d(x = log10(schools_elem.dt$all.teacher.ratio),
        size = 1, box = F,
        xlab = "Teachers", ylab = "Rooms", zlab = "Budget")
 table(schools_elem.dt$k2.cluster, schools_elem.dt$h.cluster)
+view3d(75, 15)
+snapshot3d("Output/O20B - Capacity Clusters (K-means).png", fmt = "png")
 movie3d(spin3d(axis = c(0,0,1), rpm = 5), duration = 12,
         dir = paste(getwd(),"/Output", sep = ""),
         movie = "clusterplot")
