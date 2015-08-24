@@ -141,8 +141,13 @@ We then analyze the clusters by geographic distribution and comparative dropout 
 grid.raster(readPNG("Output/O17A - Elementary Schools Capacity Dashboard.png"))
 ```
 
-Elementary schools with the best capacity metrics are those found in the upper part of Luzon. However, it is also to be noted that these are also schools with very high dropout rates compared to the rest of the public school system. Cash-strapped schools are located near the eastern seaboard of Luzon. Teachers are in short supply in Eastern Visayas and Palawan. Most surprisingly, however
+Elementary schools with the best capacity metrics are those found in the upper part of Luzon. However, it is also to be noted that these are also schools with very high dropout rates compared to the rest of the public school system. An analysis of dropout rates and capacities is performed in the next section. 
+
+Cash-strapped schools are located near the eastern seaboard of Luzon. Teachers are in short supply in Eastern Visayas and Palawan. Most surprisingly, however, schools in the "Left Behind" and "Falling Behind" category are within Metro Manila and its environs.
 
 ```{r fig.height = 10}
 grid.raster(readPNG("Output/O17B - Secondary Schools Capacity Dashboard.png"))
 ```
+
+While one might expect that the secondary school capacity situation mirrors that of elementary schools, the situation is quite different. Schools with the best and second capacity metrics, primarily in Central Luzon, Batanes, Dinagat Islands, and Siquijor, have dropout rates that are consistent with the national average. High school teachers are in short supply in Negros and Western Mindanao. Of course, Metro Manila, Bulacan, and Cavite schools round out the bottom, with severe shortages in rooms, teachers, and budget.
+
