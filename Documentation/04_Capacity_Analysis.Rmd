@@ -75,7 +75,7 @@ Cluster analysis, or clustering, is a statistical method of grouping objects wit
 
 We first determine the feasibility of clustering by examining the shape of the input space.
 
-```{r fig.height = 2.5, fig.subcap = "Hello"}
+```{r fig.height = 2.5}
 grid.arrange(
   arrangeGrob(rasterGrob(readPNG("Output/O6A - Elementary Capacity Plot.png")),
              rasterGrob(readPNG("Output/O6B - Secondary Capacity Plot.png")),
@@ -96,7 +96,53 @@ For this clustering exercise we consider two methods - agglomerative hierarchica
 
 * **K-means clustering** is a method of clustering that divides up the space into k clusters, each defined by a centroid and the units assigned based on the nearest centroid. K-means clustering has the advantage of creating more definite boundaries between the clusters.
 
-After clustering, the results of the analysis are as follows:
+After clustering, the results of the cluster analysis are as follows:
 
+```{r fig.height = 5}
+grid.arrange(
+  arrangeGrob(rasterGrob(readPNG("Output/O9A - Clustering Alternative 1 - Profiles.png")),
+              rasterGrob(readPNG("Output/O9B - Clustering Alternative 2 - Profiles.png")),
+              rasterGrob(readPNG("Output/O20A - Capacity Clusters (Hierarchical).png")),
+              rasterGrob(readPNG("Output/O20B - Capacity Clusters (K-means).png")),
+              ncol = 2),
+  textGrob("Capacity clusters for hierarchical (left) and k-means (right) clustering algorithms.",
+           gp = caption.gp),
+  ncol = 1, heights = c(0.95,0.05)
+)
+```
 
+Because the shape of the input space is relatively simple, we prefer direct k-means, as it produces clearer and more distinct clusters. This would not be the case if the shape of the input space was more complex.
 
+### Cluster Profiling
+
+We then perform the direct k-means algorithm separately on the elementary and secondary schools. In order to determine the ideal number of clusters, we plot the weighted sum of squares of the clusters that result at each level of \(k\).
+
+```{r fig.height = 4}
+grid.raster(readPNG("Output/O10 - WSS Plots.png"))
+```
+
+We set a cutoff of 10% or more in marginal reduction in the weighted sum of squares. Therefore for both elementary and secondary schools, the selected number of clusters is 6. We perform the k-means clustering at \(k = 6\) for both elementary and secondary schools with seed `721992`.
+
+```{r}
+library(pander)
+load("Data/D7 - Cluster Profiles.RData")
+panderOptions('table.split.table', 100000)
+schools_elem_profiles_formatted.dt$cluster.num <- NULL
+schools_seco_profiles_formatted.dt$cluster.num <- NULL
+pander(schools_elem_profiles_formatted.dt, 
+       caption = "Elementary Schools Cluster Profiles")
+pander(schools_seco_profiles_formatted.dt, 
+       caption = "Secondary Schools Cluster Profiles")
+```
+
+We then analyze the clusters by geographic distribution and comparative dropout rates.
+
+```{r fig.height = 10}
+grid.raster(readPNG("Output/O17A - Elementary Schools Capacity Dashboard.png"))
+```
+
+Elementary schools with the best capacity metrics are those found in the upper part of Luzon. However, it is also to be noted that these are also schools with very high dropout rates compared to the rest of the public school system. Cash-strapped schools are located near the eastern seaboard of Luzon. Teachers are in short supply in Eastern Visayas and Palawan. Most surprisingly, however
+
+```{r fig.height = 10}
+grid.raster(readPNG("Output/O17B - Secondary Schools Capacity Dashboard.png"))
+```
