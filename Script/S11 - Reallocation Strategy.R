@@ -84,7 +84,8 @@ GetRadiusSchools <- function (schoolLatLng,
   return(schools.list$school.id[schools.Roaddist <= radius])
 }
 
-GetRadiusSchools(schoolLatLng = simplify2array(c(schools.dt[1,"map.lat"], schools.dt[2,"map.lon"])),
+GetRadiusSchools(schoolLatLng = simplify2array(c(schools.dt[1,"map.lat"],
+                                                 schools.dt[2,"map.lon"])),
                  APIKey = MapQuestAPIKey,
                  schools.list = schools.dt %>% select(school.id, map.lat, map.lon),
                  radius = 3,
