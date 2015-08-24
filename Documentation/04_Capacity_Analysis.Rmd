@@ -9,11 +9,15 @@ library(knitr)
 library(png)
 library(gridExtra)
 library(caTools)
+library(extrafont)
+loadfonts(quiet = T)
 opts_knit$set(root.dir = '..')
 opts_chunk$set(cache = TRUE)
 opts_chunk$set(echo = FALSE)
 opts_chunk$set(message = FALSE)
 opts_chunk$set(warning = FALSE)
+caption.gp <- gpar(fontfamily = "Open Sans",
+                   cex = 0.5)
 ```
 
 # Capacity Analysis
@@ -67,11 +71,32 @@ It should be noted that introducing an additional shift in the class schedule ef
 
 Cluster analysis, or clustering, is a statistical method of grouping objects with others of similar characteristics. In this case, we use cluster analysis to group schools along with others of similar capacity metrics. We can then determine a capacity building strategy for each specific cluster.
 
+### Exploratory Analysis
+
 We first determine the feasibility of clustering by examining the shape of the input space.
 
-```{r fig.height = 2.5,fig.cap="Shape of elementary and secondary schools input spaces"}
-grid.arrange(rasterGrob(readPNG("Output/O6A - Elementary Capacity Plot.png")),
+```{r fig.height = 2.5, fig.subcap = "Hello"}
+grid.arrange(
+  arrangeGrob(rasterGrob(readPNG("Output/O6A - Elementary Capacity Plot.png")),
              rasterGrob(readPNG("Output/O6B - Secondary Capacity Plot.png")),
-             ncol = 2)
+             ncol = 2),
+  textGrob("Capacity metrics for elementary (left) and secondary (right) schools.",
+           gp = caption.gp),
+  ncol = 1, heights = c(0.95,0.05)
+)
 ```
+
+For both elementary and secondary schools, the capacity metrics are gradiented, and there are no distinct clusters. However, this does not mean we cannot perform clustering in order to both size the areas of concern and produce a specific "capacity strategy"" per cluster.
+
+### Alogrithm Selection
+
+For this clustering exercise we consider two methods - agglomerative hierarchical clustering and divisive k-means clustering:
+
+* **Hierarchical clustering** is a method of clustering that "builds" up individual units based on their nearest neighbors. As the algorithm progresses, the clusters become larger and larger. Hierarchical clustering has the benefit of capturing more nuances in the input space.
+
+* **K-means clustering** is a method of clustering that divides up the space into k clusters, each defined by a centroid and the units assigned based on the nearest centroid. K-means clustering has the advantage of creating more definite boundaries between the clusters.
+
+After clustering, the results of the analysis are as follows:
+
+
 
