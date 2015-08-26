@@ -10,6 +10,9 @@ library(dplyr)
 library(reshape2)
 library(beepr)
 library(ggplot2)
+library(extrafont)
+loadfonts(quiet = T)
+library(scales)
 
 # Data --------------------------------------------------------------------
 load("Data/D5 - Capacity Data.RData")
@@ -101,28 +104,77 @@ hist(Winsorize(log10(schools.dt$capacity.pc), p = 0.025, upper = F))
 schools.dt$capacity.pc_win <-
   Winsorize(log10(schools.dt$capacity.pc), p = 0.025, upper = F)
 
-
 # Clustering --------------------------------------------------------------
-set.seed(721992)
-schools.kc <- kmeans(scale(schools.dt %>%
-                             filter(!is.na(cum.dropout_win),
-                                    !is.na(capacity.pc_win)) %>%
-                             select(cum.dropout_win,
-                                    capacity.pc_win)),
-                     centers = 4)
 
-schools_clustered.dt <- schools.dt %>%
-  filter(!is.na(cum.dropout_win),
-         !is.na(capacity.pc_win))
+# Elementary
+schools_elem.dt <- schools.dt %>%
+  filter(!is.na(cum.dropout_win), !is.na(capacity.pc_win),
+         school.classification == "Elementary")
 
-schools_clustered.dt$capdrop.cluster <- schools.kc$cluster
+set.seed(19927292)
+schools_elem.kc <- kmeans(scale(schools_elem.dt %>%
+                                  select(cum.dropout_win,
+                                         capacity.pc_win)),
+                          centers = 4)
+
+schools_elem.dt$clust <- schools_elem.kc$cluster
+schools_elem.kc$unscaled.centers <- schools_elem.dt %>%
+  group_by(clust) %>%
+  summarise(cum.dropout_win = mean(cum.dropout_win),
+            capacity.pc_win = mean(capacity.pc_win)) %>%
+  mutate(name = c("Emptying Out",
+                  "Pulling Ahead",
+                  "Desolate",
+                  "Filling Up"))
+
+# Secondary
+
+schools_seco.dt <- schools.dt %>%
+  filter(!is.na(cum.dropout_win), !is.na(capacity.pc_win),
+         school.classification == "Secondary")
+
+schools_seco.kc <- kmeans(scale(schools_seco.dt %>%
+                                  select(cum.dropout_win,
+                                         capacity.pc_win)),
+                          centers = 4)
+
+schools_seco.dt$clust <- schools_seco.kc$cluster
+schools_seco.kc$unscaled.centers <- schools_seco.dt %>%
+  group_by(clust) %>%
+  summarise(cum.dropout_win = mean(cum.dropout_win),
+            capacity.pc_win = mean(capacity.pc_win)) %>%
+  mutate(name = c("Pulling Ahead","Emptying Out","Desolate","Filling Up"))
 
 # Plotting ----------------------------------------------------------------
 
-ggplot(schools_clustered.dt %>%
-         filter(school.classification == "Elementary"),
-       aes(x = capacity.pc_win, y = cum.dropout_win,
-           color = as.factor(capdrop.cluster))) +
-  geom_point(size = 1, alpha = 0.5)
+ggplot(data = schools_elem.dt,
+       aes(x = capacity.pc_win, y = cum.dropout_win)) +
+  geom_point(aes(color = as.factor(clust)), size = 1, alpha = 0.5) +
+  geom_text(data = schools_elem.kc$unscaled.centers,
+            aes(label = name), family = "Open Sans") +
+  scale_y_continuous(labels = percent) +
+  ylab("Cumulative Dropout Rate\n(% of original cohort)") +
+  xlab("Capacity Index") +
+  theme_minimal(base_family = "Open Sans") +
+  theme(legend.position = "none",
+        axis.title = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", size = 14)) +
+  ggtitle("Elementary\n")
 
-beep(sound = 2)
+ggplot(data = schools_elem.dt,
+       aes(x = capacity.pc_win, y = cum.dropout_win)) +
+  geom_point
+
+ggplot(data = schools_seco.dt,
+       aes(x = capacity.pc_win, y = cum.dropout_win)) +
+  geom_point(aes(color = as.factor(clust)), size = 1, alpha = 0.5) +
+  geom_text(data = schools_seco.kc$unscaled.centers,
+            aes(label = name), family = "Open Sans") +
+  scale_y_continuous(labels = percent) +
+  ylab("Cumulative Dropout Rate\n(% of original cohort)") +
+  xlab("Capacity Index") +
+  theme_minimal(base_family = "Open Sans") +
+  theme(legend.position = "none",
+        axis.title = element_text(face = "bold"),
+        plot.title = element_text(face = "bold", size = 14)) +
+  ggtitle("Secondary\n")
