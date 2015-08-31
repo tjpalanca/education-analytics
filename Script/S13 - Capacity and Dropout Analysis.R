@@ -13,10 +13,14 @@ library(ggplot2)
 library(extrafont)
 loadfonts(quiet = T)
 library(scales)
+library(maptools)
+library(rgeos)
 
 # Data --------------------------------------------------------------------
 load("Data/D5 - Capacity Data.RData")
 load("Data/D1 - Enrollment Data.RData")
+
+
 
 # Computation of School Level Dropout Rate --------------------------------
 
@@ -160,10 +164,6 @@ ggplot(data = schools_elem.dt,
         axis.title = element_text(face = "bold"),
         plot.title = element_text(face = "bold", size = 14)) +
   ggtitle("Elementary\n")
-
-ggplot(data = schools_elem.dt,
-       aes(x = capacity.pc_win, y = cum.dropout_win)) +
-  geom_point
 
 ggplot(data = schools_seco.dt,
        aes(x = capacity.pc_win, y = cum.dropout_win)) +
