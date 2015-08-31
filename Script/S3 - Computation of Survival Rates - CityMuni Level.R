@@ -21,17 +21,6 @@ load("Data/D1 - Enrollment Data.RData")
 load("Data/D2 - Schools Data.RData")
 load("Data/D3 - CityMuni Data.RData")
 
-PH.map <- get_googlemap (
-  center = c(121.8347,12.45113),
-  zoom = 5,
-  scale = 4,
-  maptype = "roadmap",
-  region = "PH",
-  filename = "Philippines Map",
-  style = "feature:all|element:labels|visibility:off",
-  color = "bw"
-)
-
 # CityMuni Level Cohort ---------------------------------------------------
 
 schools.dt <- schools.dt %>%
